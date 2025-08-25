@@ -1,26 +1,55 @@
+/* src/app/globals.css */
+
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@keyframes duel-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100px); }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes duel-right {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100px); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes poeira {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+@keyframes trophy-up {
+  0% { transform: translateY(50px) scale(0.8); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.animate-duel-left { animation: duel-left 0.8s ease-in-out forwards; }
+.animate-duel-right { animation: duel-right 0.8s ease-in-out forwards; }
+.animate-poeira { animation: poeira 1.2s ease-in-out; }
+.animate-trophy-up { animation: trophy-up 0.5s ease-out forwards; }
+
+/* Adicionar no final de src/app/globals.css */
+
+@keyframes pulse-vs {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.75;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes comic-burst {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+/* Classes que vamos usar nos componentes */
+.animate-pulse-vs {
+  animation: pulse-vs 1.2s ease-in-out infinite;
+}
+.animate-comic-burst {
+  animation: comic-burst 0.8s ease-in-out forwards;
 }
