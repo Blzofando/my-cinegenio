@@ -41,9 +41,9 @@
    background radial + gradient animado (lento)
    ---------------------------- */
 .bg-radial {
-  background: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.12), transparent 40%),
-              radial-gradient(circle at 80% 30%, rgba(236,72,153,0.08), transparent 50%),
-              radial-gradient(circle at 40% 80%, rgba(139,92,246,0.12), transparent 45%);
+  background: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.15), transparent 28%),
+              radial-gradient(circle at 80% 30%, rgba(236,72,153,0.10), transparent 35%),
+              radial-gradient(circle at 40% 80%, rgba(139,92,246,0.15), transparent 30%);
 }
 
 @keyframes gradient-slide {
@@ -71,20 +71,6 @@
   --header-height: 72px;
   --footer-height: 76px;
 }
-
-/* header fixo vazio (reserva espaço) */
-.app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 10%;
-  height: var(--header-height);
-  z-index: 60;
-  pointer-events: none;
-}
-
-/* garante que o conteúdo comece abaixo do header */
-.main-with-fixed-header { padding-top: var(--header-height); }
 
 /* ----------------------------
    HERO (identidade) - mobile-focused
@@ -258,12 +244,11 @@
 /* garante que o body não gere rolagem extra desnecessária */
 html, body, #__next { height: 100%; }
 
-/* responsividade desktop (mantém layout anterior) */
+/* responsividade desktop */
 @media(min-width:1024px){
   .hero { min-height: 38vh; }
   .hero-decor img { max-width: 220px; width: 12vw; }
-  .main-with-fixed-header{ padding-top: -15px; }
-  .app-header{ height: -15px; }
+  /* As regras de padding-top e height negativos foram REMOVIDAS daqui */
   .hero-title { font-size: 56px; }
   .cta-wide { padding: 18px 22px; font-size: 18px; }
 }
