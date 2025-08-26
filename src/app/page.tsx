@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import ParticlesBackground from "@/components/particles/ParticlesBackground";
 import Hero from "@/components/hero/Hero";
 import FeatureCard from "@/components/ui/FeatureCard";
@@ -22,21 +23,21 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen w-full text-white relative overflow-hidden">
-      {/* fundo animado + overlay */}
+    <main className="min-h-screen w-full text-white relative overflow-hidden bg-radial main-with-fixed-header">
+      {/* fundo animado + overlay por trás */}
       <div className="fixed inset-0 -z-30" aria-hidden>
         <div className="animated-gradient absolute inset-0" />
         <div className="absolute inset-0 gradient-overlay" />
       </div>
 
-      {/* Partículas */}
+      {/* Partículas (poeira cósmica) */}
       {SHOW_PARTICLES && <ParticlesBackground />}
 
       {/* ======================
           DESKTOP LAYOUT (>= lg)
           ====================== */}
       <div className="hidden lg:flex flex-col h-screen p-8">
-        {/* Header não-fixo (rola com a página) */}
+        {/* Header (rola com a página no desktop) */}
         <header className="w-full flex justify-between items-center mb-8 flex-shrink-0">
           <div className="flex items-center gap-4 flex-wrap">
             <LevelBadge level={7} />
@@ -63,21 +64,20 @@ export default function HomePage() {
             <FeatureCard className="feature-card" icon="🗓️" title="Relevantes da Semana" href="/weekly-relevants" />
           </div>
 
-          {/* Coluna direita: Logo grande + CTA */}
+          {/* Coluna direita: Logo grande + CTA + imagens decorativas */}
           <div className="relative flex flex-col items-center justify-center h-full">
-            <Logo className="text-7xl" />
+            <Logo className="text-8xl" />
 
-            {/* imagens decorativas atrás do logo (opcional) */}
             <div className="absolute flex items-center justify-center gap-4 opacity-60 -z-20">
               <Image src="/rolo-neon.png" alt="Rolo de filme" width={260} height={260} className="img-glow translate-x-10" />
-              <Image src="/claquete-neon.png" alt="Claquete" width={200} height={200} className="img-glow -translate-x-10" />
+              <Image src="/claquete-neon.png" alt="Claquete" width={220} height={220} className="img-glow -translate-x-10" />
             </div>
 
             <div className="mt-8 w-3/4">
-              <a href="/chat" className="cta-wide">
+              <Link href="/chat" className="cta-wide">
                 <span style={{ fontSize: 22 }}>💬</span>
                 <span style={{ fontSize: 18 }}>Fale com o Gênio</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -93,11 +93,21 @@ export default function HomePage() {
         {/* HERO (identidade que some ao rolar) */}
         <Hero />
 
-        {/* Conteúdo principal com rolagem */}
-        <div className="px-4">
-          <section className="mb-40" aria-label="Funções principais">
+        {/* Conteúdo principal com rolagem — usa mobile-content */}
+        <div className="mobile-content px-4">
+          {/* CTA centralizado (ocupando largura visual de 2 colunas) */}
+          <div style={{ marginTop: 12 }}>
+            <Link href="/chat" className="cta-centered" aria-label="Fale com o Gênio">
+              <span style={{ fontSize: 20 }}>💬</span>
+              <span style={{ marginLeft: 10, fontWeight: 800 }}>Fale com o Gênio</span>
+            </Link>
+          </div>
+
+          <div className="content-spacer" />
+
+          {/* Feature grid ocupa o restante do espaço */}
+          <section className="mb-6" aria-label="Funções principais">
             <div className="feature-grid">
-              {/* FeatureCard já estilizado via className */}
               <FeatureCard className="feature-card" icon="💡" title="Sugestão Personalizada" href="/suggestion" />
               <FeatureCard className="feature-card" icon="🎲" title="Sugestão Aleatória" href="/random" />
               <FeatureCard className="feature-card" icon="📡" title="Radar de Lançamentos" href="/radar" />
@@ -106,10 +116,13 @@ export default function HomePage() {
               <FeatureCard className="feature-card" icon="🗓️" title="Relevantes da Semana" href="/weekly-relevants" />
             </div>
           </section>
+
+          {/* padding antes do footer para safe-area */}
+          <div style={{ height: "20px" }} />
         </div>
       </div>
 
-      {/* Footer fixo mobile */}
+      {/* Footer fixo mobile (maior) */}
       <footer className="footer-fixed bg-[#110048]/80 backdrop-blur-sm border-t border-white/10 lg:hidden" aria-hidden>
         <div className="max-w-3xl mx-auto px-4">
           <div className="flex justify-around items-center h-16">
@@ -120,7 +133,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* Feedback */}
+      {/* Feedback / toasts */}
       <AchievementToast visible={achievement} message="🏆 Desafio iniciado! Boa sorte, Gênio." />
       <ConfettiOnComplete active={achievement} />
     </main>

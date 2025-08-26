@@ -8,22 +8,18 @@
   0% { transform: translateX(0); }
   100% { transform: translateX(100px); }
 }
-
 @keyframes duel-right {
   0% { transform: translateX(0); }
   100% { transform: translateX(-100px); }
 }
-
 @keyframes poeira {
   0%, 100% { opacity: 0; transform: scale(0.5); }
   50% { opacity: 1; transform: scale(1.5); }
 }
-
 @keyframes trophy-up {
   0% { transform: translateY(50px) scale(0.8); opacity: 0; }
   100% { transform: translateY(0) scale(1); opacity: 1; }
 }
-
 .animate-duel-left { animation: duel-left 0.8s ease-in-out forwards; }
 .animate-duel-right { animation: duel-right 0.8s ease-in-out forwards; }
 .animate-poeira { animation: poeira 1.2s ease-in-out; }
@@ -41,14 +37,15 @@
 .animate-pulse-vs { animation: pulse-vs 1.2s ease-in-out infinite; }
 .animate-comic-burst { animation: comic-burst 0.8s ease-in-out forwards; }
 
-/* fundo radial sutil */
+/* ----------------------------
+   background radial + gradient animado (lento)
+   ---------------------------- */
 .bg-radial {
   background: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.12), transparent 40%),
               radial-gradient(circle at 80% 30%, rgba(236,72,153,0.08), transparent 50%),
               radial-gradient(circle at 40% 80%, rgba(139,92,246,0.12), transparent 45%);
 }
 
-/* gradiente animado (mais lento) */
 @keyframes gradient-slide {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -65,26 +62,32 @@
   animation: gradient-slide 36s linear infinite;
   will-change: background-position;
 }
-
-/* overlay escuro acima do gradient para contraste */
 .gradient-overlay { background: rgba(0,0,0,0.46); }
 
-/* HEADER FIXO (vazio/minimal) */
+/* ----------------------------
+   layout: header / main padding
+   ---------------------------- */
+:root{
+  --header-height: 72px;
+  --footer-height: 76px;
+}
+
+/* header fixo vazio (reserva espaço) */
 .app-header {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 72px; /* altura fixa do header */
+  width: 10%;
+  height: var(--header-height);
   z-index: 60;
   pointer-events: none;
 }
 
 /* garante que o conteúdo comece abaixo do header */
-.main-with-fixed-header { padding-top: 72px; }
+.main-with-fixed-header { padding-top: var(--header-height); }
 
 /* ----------------------------
-   HERO (identidade) - maior no mobile
+   HERO (identidade) - mobile-focused
    ---------------------------- */
 .hero {
   display: flex;
@@ -96,15 +99,17 @@
   will-change: transform, opacity;
 }
 
-/* hero visível / escondido (JS toggles) */
+/* estados show/hide do hero */
 .hero--visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
 .hero--hidden  { transform: translateY(-14px); opacity: 0; pointer-events: none; }
 
 .hero-left { max-width: 62%; }
 
-/* título maior e empilhado */
-.hero-title { font-weight: 900; font-size: 46px; line-height: 1; color: #fff; }
-.hero-title .subtitle { display:block; font-size:20px; margin-top:6px; color: #c79cff; font-weight:700; }
+/* título empilhado e maior */
+/* ajustes finais do Hero */
+.hero-title { font-size: 64px !important; font-weight: 700; }
+.hero-title .subtitle { font-size: 40px !important; color: #c79cff; }
+.hero-decor img, .hero-decor :where(img,svg) { max-width: 320px; width: 34vw; filter: drop-shadow(0 0 28px rgba(140,70,255,0.36)); }
 
 .hero-sub {
   color: #cfc7e8;
@@ -113,18 +118,18 @@
   font-weight: 600;
 }
 
-/* claquete decor: maior e com glow mais forte */
-.hero-decor { display:flex; align-items:center; justify-content:center; width:36%; }
-.hero-decor img {
-  max-width:160px;
-  width: 28vw;
+/* claquete maior e glow */
+.hero-decor { display:flex; align-items:center; justify-content:center; width:150%; }
+.hero-decor img, .hero-decor :where(img,svg) {
+  max-width:360px;
+  width: 48vw;
   height: auto;
-  border-radius: 10px;
+  border-radius: 6px;
   filter: drop-shadow(0 0 18px rgba(123,57,255,0.32));
-  transform: translateY(0);
+  transform: translateY(20px);
 }
 
-/* CTA destacado e mais largo (visualmente ocupa 2 colunas) */
+/* CTA destacado e largura ampla */
 .cta-wide {
   width: 100%;
   border-radius: 16px;
@@ -141,6 +146,41 @@
 }
 .cta-wide:hover { transform: translateY(-2px); box-shadow: 0 20px 46px rgba(123,57,255,0.14); }
 
+/* versão centralizada do CTA no mobile */
+.cta-centered {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  display: block;
+  border-radius: 16px;
+  padding: 14px 20px;
+  background: linear-gradient(90deg,#6a28d6 0%, #ab6aff 100%);
+  box-shadow: 0 20px 48px rgba(106,40,214,0.12);
+  color: #fff;
+  font-weight: 800;
+  text-align:center;
+}
+
+/* ----------------------------
+   mobile layout helper (preencher espaço, evitar "vazio" no final)
+   ---------------------------- */
+.mobile-content {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
+}
+
+/* wrapper CTA + grid */
+.hero-and-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+/* espaçador leve */
+.content-spacer { height: 12px; }
+
 /* ----------------------------
    GRID e CARDS (funções)
    ---------------------------- */
@@ -148,34 +188,32 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  margin-top: 12px; /* menos que antes; controla subida das funções */
-  padding-bottom: 140px;
-  position: relative;
+  margin-top: 12px;
+  padding-bottom: 24px;
+  flex: 1 1 auto;
+  align-content: start;
 }
 
-/* feature-card: único fundo — removi pseudo ::before (nada de "caixa dupla") */
 .feature-card {
   position: relative;
   border-radius: 12px;
-  padding: 16px;
-  min-height: 92px;
+  padding: 14px;
+  min-height: 88px;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   gap:6px;
   text-align:center;
-  background: linear-gradient(180deg, rgba(16,6,34,0.98), rgba(18,7,36,0.99));
+  background: linear-gradient(180deg, rgba(42, 16, 88, 0.98), rgba(18,7,36,0.99));
   border: 1px solid rgba(255,255,255,0.03);
   box-shadow: 0 8px 20px rgba(19,1,51,0.10);
   transition: transform .14s ease, box-shadow .14s ease;
 }
 
-/* icon e titulo levemente menores para não cortar */
-.feature-icon { font-size: 24px; filter: drop-shadow(0 0 6px rgba(123,57,255,0.12)); }
+.feature-icon { font-size: 22px; filter: drop-shadow(0 0 6px rgba(123,57,255,0.12)); }
 .feature-title { font-weight:700; font-size:13px; color:#efeaff; }
 
-/* hover discreto */
 .feature-card:hover { transform: translateY(-4px); box-shadow: 0 18px 36px rgba(19,1,51,0.14); }
 
 /* ----------------------------
@@ -196,24 +234,36 @@
 }
 .badge-emoji { font-size:18px; transform: translateY(-1px); }
 
-/* neon text */
+/* neon text helper */
 .text-neon {
   text-shadow: 0 0 8px rgba(142,0,255,0.85), 0 0 28px rgba(19,1,51,0.36);
   -webkit-text-stroke: 0.35px rgba(0,0,0,0.12);
 }
 
-/* footer fixo (mobile) */
-.footer-fixed { position: fixed; bottom: 0; left: 0; right: 0; z-index: 70; }
+/* ----------------------------
+   FOOTER FIXO (mobile) - aumentado e puxado pro roxo
+   ---------------------------- */
+.footer-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  height: var(--footer-height);
+  background: linear-gradient(180deg, rgba(35,8,66,0.96), rgba(21,5,49,0.96));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.footer-fixed .h-16 { height: calc(var(--footer-height)); display:flex; align-items:center; }
 
-/* badge wrapper util (se usado no layout) */
-.badge-wrapper { position: absolute; right: 12px; top: 8px; z-index: 30; }
+/* garante que o body não gere rolagem extra desnecessária */
+html, body, #__next { height: 100%; }
 
-/* responsividade fina */
+/* responsividade desktop (mantém layout anterior) */
 @media(min-width:1024px){
   .hero { min-height: 38vh; }
   .hero-decor img { max-width: 220px; width: 12vw; }
-  .main-with-fixed-header{ padding-top: 88px; }
-  .app-header{ height: 88px; }
+  .main-with-fixed-header{ padding-top: -15px; }
+  .app-header{ height: -15px; }
   .hero-title { font-size: 56px; }
   .cta-wide { padding: 18px 22px; font-size: 18px; }
 }
