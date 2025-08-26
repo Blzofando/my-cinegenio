@@ -1,7 +1,9 @@
+// src/components/hero/Hero.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import LevelBadge from "@/components/ui/LevelBadge";
 
 export default function Hero() {
@@ -32,13 +34,12 @@ export default function Hero() {
       <div className="hero-left" style={{ maxWidth: "62%" }}>
         <div className="hero-title text-neon" style={{ lineHeight: 1 }}>
           <div style={{ fontWeight: 900 }}>CineGênio</div>
-          <div className="text-indigo-300 font-semibold" style={{ fontSize: 20, marginTop: 4 }}>Pessoal</div>
+          <div className="subtitle">Pessoal</div>
         </div>
 
         <div className="hero-sub">Seu assistente de cinema.</div>
 
         <div className="mt-6" style={{ maxWidth: 360 }}>
-          {/* CTA wide (visualmente ocupa 2 colunas) */}
           <Link href="/chat" className="cta-wide">
             <span style={{ fontSize: 20 }}>💬</span>
             <span style={{ fontSize: 16 }}>Fale com o Gênio</span>
@@ -47,7 +48,8 @@ export default function Hero() {
       </div>
 
       <div className="hero-decor" aria-hidden>
-        <img src="/claquete-neon.png" alt="claquete" style={{ maxWidth: 160, width: "28vw", height: "auto", borderRadius: 10 }} />
+        {/* next/image com width/height para evitar o aviso */}
+        <Image src="/claquete-neon.png" alt="Claquete" width={160} height={160} style={{ borderRadius: 10 }} />
       </div>
     </section>
   );
