@@ -47,19 +47,19 @@
 }
 
 @keyframes gradient-slide {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% { background-position: 50% 0%; }
+  50% { background-position: 50% 100%; }
+  100% { background-position: 50% 0%; }
 }
 .animated-gradient {
-  background: linear-gradient(90deg,
+  background: linear-gradient(180deg,
     #02000a 0%,
     #070021 25%,
     #11002f 50%,
     #1a0346 75%,
     #02000a 100%);
   background-size: 200% 200%;
-  animation: gradient-slide 36s linear infinite;
+  animation: gradient-slide 5s linear infinite;
   will-change: background-position;
 }
 .gradient-overlay { background: rgba(0,0,0,0.46); }
@@ -94,7 +94,7 @@
 /* título empilhado e maior */
 /* ajustes finais do Hero */
 .hero-title { font-size: 64px !important; font-weight: 700; }
-.hero-title .subtitle { font-size: 40px !important; color: #c79cff; }
+.hero-title .subtitle { font-size: 47px !important; color: #c79cff; }
 .hero-decor img, .hero-decor :where(img,svg) { max-width: 320px; width: 34vw; filter: drop-shadow(0 0 28px rgba(140,70,255,0.36)); }
 
 .hero-sub {
@@ -242,7 +242,13 @@
 .footer-fixed .h-16 { height: calc(var(--footer-height)); display:flex; align-items:center; }
 
 /* garante que o body não gere rolagem extra desnecessária */
-html, body, #__next { height: 100%; }
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;   /* trava horizontal */
+  overscroll-behavior-y: contain; /* trava bounce em iOS/Edge */
+}
 
 /* responsividade desktop */
 @media(min-width:1024px){

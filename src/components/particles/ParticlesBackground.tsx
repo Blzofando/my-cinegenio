@@ -17,7 +17,25 @@ const particlesOptions = {
       anim: { enable: true, speed: 0.08, opacity_min: 0.02, sync: false }
     },
     size: { value: 1.2, random: { enable: true, minimumValue: 0.5 } },
-    move: { enable: true, speed: 0.08, direction: "none", random: true, straight: false, outModes: { default: "out" } },
+    move: {
+      enable: true,
+      speed: 1.6,   // aumenta a velocidade (estava 0.5 ou 1 provavelmente)
+      direction: "none", 
+      random: true,
+      straight: false, // não se mover em linha reta
+      outModes: {
+        default: "out",
+      },
+      trail: {
+        enable: false,
+      },
+    },
+    attract: {
+      enable: true,
+      rotateX: 600,
+      rotateY: 1200,
+    },
+    warp: true,
     shape: { type: "circle" },
     twinkle: { particles: { enable: true, frequency: 0.008, opacity: 0.8 } }
   },
