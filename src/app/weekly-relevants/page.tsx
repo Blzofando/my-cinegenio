@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { WeeklyRelevants, WeeklyRelevantCategory, WeeklyRelevantItem, WatchlistItem, DisplayableItem } from '@/types';
+// A MUDANÇA ESTÁ AQUI:
 import { weeklyRelevantsCollection } from '@/lib/firestore';
 import { WatchlistContext } from '@/contexts/WatchlistContext';
 import DetailsModal from '@/components/shared/DetailsModal';

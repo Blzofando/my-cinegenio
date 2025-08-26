@@ -1,11 +1,11 @@
 // src/lib/tmdb.ts
 
-import { WatchProviders, TMDbSearchResult } from "@/types";
+import { WatchProviders, TMDbSearchResult, WatchProvider } from "@/types";
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
-// Lógica de fila de requisições para evitar sobrecarga na API
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const requestQueue: (() => Promise<any>)[] = [];
 let isProcessing = false;
 const DELAY_BETWEEN_REQUESTS = 250;
@@ -18,7 +18,7 @@ const processQueue = async () => {
         try {
             await requestTask();
         } catch {
-            // O erro é tratado no bloco catch da função que o chama
+            // Silencioso, o erro é tratado na chamada original
         }
     }
     setTimeout(() => {
@@ -34,8 +34,6 @@ const addToQueue = <T>(requestFn: () => Promise<T>): Promise<T> => {
         if (!isProcessing) processQueue();
     });
 };
-
-// --- Funções de Busca Internas ---
 
 const internalSearchByTitleAndYear = async (title: string, year: number, mediaType: 'movie' | 'tv'): Promise<TMDbSearchResult | null> => {
     const endpoint = mediaType === 'movie' ? 'movie' : 'tv';
@@ -132,8 +130,6 @@ const internalGetTrending = async (): Promise<TMDbSearchResult[]> => {
     return data.results || [];
 };
 
-// --- Funções Exportadas ---
-
 export const searchByTitleAndYear = (title: string, year: number, mediaType: 'movie' | 'tv') => {
     return addToQueue(() => internalSearchByTitleAndYear(title, year, mediaType));
 };
@@ -146,7 +142,17 @@ export const getTMDbDetails = (id: number, mediaType: 'movie' | 'tv') => {
     return addToQueue(() => internalGetTMDbDetails(id, mediaType));
 };
 
-export const getProviders = (data: { 'watch/providers'?: { results?: { BR?: any } } }): WatchProviders | undefined => {
+type TMDbProviderData = {
+  'watch/providers'?: {
+    results?: {
+      BR?: {
+        link: string;
+        flatrate?: WatchProvider[];
+      };
+    };
+  };
+};
+export const getProviders = (data: TMDbProviderData): WatchProviders | undefined => {
     const providers = data?.['watch/providers']?.results?.BR;
     if (!providers) return undefined;
     return {

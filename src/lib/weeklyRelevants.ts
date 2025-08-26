@@ -3,22 +3,15 @@
 "use server";
 
 import { db } from '@/lib/firebase/client';
-import { doc, getDoc, setDoc, Timestamp, collection } from "firebase/firestore";
-import { AllManagedWatchedData, WeeklyRelevants, WeeklyRelevantItem } from '@/types'; // <--- TIPO ADICIONADO AQUI
+import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore"; // 'collection' foi removido daqui
+import { AllManagedWatchedData, WeeklyRelevants, WeeklyRelevantItem } from '@/types';
 import { formatWatchedDataForPrompt, fetchWeeklyRelevants } from './gemini';
 import { getTMDbDetails, searchByTitleAndYear } from './tmdb';
+import { weeklyRelevantsCollection } from './firestore';
 
-// Onde salvaremos a lista e os metadados de atualização
-const RELEVANTS_COLLECTION_NAME = 'weeklyRelevants';
 const METADATA_COLLECTION_NAME = 'metadata';
 const METADATA_DOC_ID = 'weeklyRelevantsMetadata';
 
-// Referência à coleção para uso futuro na tela de visualização
-export const weeklyRelevantsCollection = collection(db, RELEVANTS_COLLECTION_NAME);
-
-/**
- * Verifica se uma nova lista precisa ser gerada.
- */
 const shouldUpdate = async (): Promise<boolean> => {
     const metadataRef = doc(db, METADATA_COLLECTION_NAME, METADATA_DOC_ID);
     const metadataSnap = await getDoc(metadataRef);
@@ -43,9 +36,10 @@ const shouldUpdate = async (): Promise<boolean> => {
     return false;
 };
 
-/**
- * Server Action para atualizar a lista de Relevantes da Semana.
- */
+// Definindo o tipo para o item que vem da IA
+type AIResultItem = { title: string; year: number; media_type: 'movie' | 'tv'; reason: string; };
+type AICategory = { categoryTitle: string; items: AIResultItem[] };
+
 export const updateWeeklyRelevantsIfNeeded = async (watchedData: AllManagedWatchedData): Promise<void> => {
     if (!(await shouldUpdate())) {
         return;
@@ -74,9 +68,9 @@ export const updateWeeklyRelevantsIfNeeded = async (watchedData: AllManagedWatch
         const aiResult = await fetchWeeklyRelevants(prompt);
 
         const finalCategories = await Promise.all(
-            aiResult.categories.map(async (category) => {
+            aiResult.categories.map(async (category: AICategory) => {
                 const enrichedItems = await Promise.all(
-                    category.items.map(async (itemFromAI) => { // O tipo agora é inferido corretamente
+                    category.items.map(async (itemFromAI) => {
                         try {
                             const tmdbResult = await searchByTitleAndYear(itemFromAI.title, itemFromAI.year, itemFromAI.media_type);
                             if (!tmdbResult) {
@@ -100,7 +94,7 @@ export const updateWeeklyRelevantsIfNeeded = async (watchedData: AllManagedWatch
                         }
                     })
                 );
-                return { ...category, items: enrichedItems.filter((item): item is WeeklyRelevantItem => item !== null) };
+                return { categoryTitle: category.categoryTitle, items: enrichedItems.filter((item): item is WeeklyRelevantItem => item !== null) };
             })
         );
 
@@ -109,7 +103,7 @@ export const updateWeeklyRelevantsIfNeeded = async (watchedData: AllManagedWatch
             generatedAt: Date.now(),
             categories: nonEmptyCategories,
         };
-
+        
         const listDocRef = doc(weeklyRelevantsCollection, 'currentList');
         await setDoc(listDocRef, weeklyRelevants);
 

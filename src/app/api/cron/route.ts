@@ -8,19 +8,18 @@ import { generateNewWeeklyChallenge } from '@/lib/challenge';
 import { AllManagedWatchedData } from '@/types';
 
 export async function GET(request: Request) {
-    // 1. Segurança
+    // 1. Segurança: Verifica se a requisição veio do serviço de Cron da Vercel
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return new Response('Unauthorized', { status: 401 });
     }
 
     // 2. Lógica do Dia da Semana
-    // A Vercel usa o fuso horário UTC.
     const today = new Date();
     const dayOfWeek = today.getUTCDay(); // 0 = Domingo, 1 = Segunda, 2 = Terça, etc.
 
     const tasksToRun: Promise<void>[] = [];
-    const tasksSummary: string[] = [];
+    let tasksSummary: string[] = [];
 
     // --- Tarefa Diária ---
     console.log("CRON: Verificando tarefa diária...");
@@ -28,10 +27,8 @@ export async function GET(request: Request) {
     tasksSummary.push("Radar TMDb");
 
     // --- Tarefas Semanais ---
-    // Apenas executa se for o dia certo da semana
     if (dayOfWeek === 0) { // Domingo
         console.log("CRON: Hoje é Domingo, executando tarefa do Desafio Semanal.");
-        // Funções que precisam de 'watchedData'
         const watchedItems = await getWatchedItems();
         const watchedData: AllManagedWatchedData = {
             amei: watchedItems.filter(i => i.rating === 'amei'),
@@ -39,6 +36,7 @@ export async function GET(request: Request) {
             meh: watchedItems.filter(i => i.rating === 'meh'),
             naoGostei: watchedItems.filter(i => i.rating === 'naoGostei'),
         };
+        // Corrigido para não quebrar o tipo Promise<void>[]
         tasksToRun.push(generateNewWeeklyChallenge(watchedData).then(() => {}));
         tasksSummary.push("Desafio Semanal");
 

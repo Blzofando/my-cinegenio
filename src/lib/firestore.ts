@@ -31,6 +31,7 @@ export const updateWatchedItem = async (id: number, updatedData: Partial<Managed
     await updateDoc(itemDocRef, updatedData);
 };
 
+
 // --- COLEÇÃO DA WATCHLIST ---
 const WATCHLIST_COLLECTION_NAME = 'watchlist';
 
@@ -48,6 +49,7 @@ export const updateWatchlistItem = async (id: number, dataToUpdate: Partial<Watc
     const itemDocRef = doc(db, WATCHLIST_COLLECTION_NAME, id.toString());
     await updateDoc(itemDocRef, dataToUpdate);
 };
+
 
 // --- COLEÇÕES DO RADAR DE LANÇAMENTOS ---
 export const tmdbRadarCacheCollection = collection(db, 'tmdbRadarCache');
