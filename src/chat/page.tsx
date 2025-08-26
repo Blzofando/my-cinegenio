@@ -76,7 +76,7 @@ export default function ChatPage() {
             <div className="flex-grow flex flex-col items-center justify-center p-4 text-center">
                 <h1 className="text-4xl font-bold text-white mb-2">Fale com o Gênio</h1>
                 <p className="text-lg text-gray-400 max-w-2xl">
-                    Peça por uma "sugestão de filme de terror com suspense" e veja a mágica acontecer.
+                    Peça por uma &quot;sugestão de filme de terror com suspense&quot; e veja a mágica acontecer.
                 </p>
                 {error && <p className="mt-4 text-yellow-400 bg-yellow-900/50 p-3 rounded-lg text-sm">{error}</p>}
             </div>

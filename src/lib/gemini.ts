@@ -5,6 +5,10 @@ import { GoogleGenerativeAI, FunctionCallingMode, SchemaType } from "@google/gen
 import type { FunctionDeclarationSchema } from "@google/generative-ai";
 import { AllManagedWatchedData, ManagedWatchedItem, Recommendation, DuelResult, Challenge } from '@/types';
 
+// Tipos para a resposta da IA
+type WeeklyRelevantsAIResponse = { categories: { categoryTitle: string; items: { title: string; year: number; media_type: 'movie' | 'tv'; reason: string; }[] }[] };
+type PersonalizedRadarAIResponse = { releases: { id: number; tmdbMediaType: 'movie' | 'tv'; title: string; reason: string; }[] };
+
 // --- CONFIGURAÇÃO DA IA ---
 const API_KEY = process.env.GEMINI_API_KEY;
 if (!API_KEY) {
@@ -185,9 +189,9 @@ export const fetchRecommendation = async (prompt: string): Promise<Omit<Recommen
     return await runJsonMode(prompt, recommendationSchema) as Omit<Recommendation, 'posterUrl'>;
 };
 
-export const fetchWeeklyRelevants = async (prompt: string): Promise<{ categories: any[] }> => {
-    if (!API_KEY) return { categories: [{"categoryTitle":"Ação Inteligente","items":[{"id":27205,"tmdbMediaType":"movie","title":"A Origem (2010)","poster_path":"/9e3Dz7aCANy5ahtlF5K8LgL6e0A.jpg","genre":"Ação","synopsis":"Dom Cobb é um ladrão que rouba informações...","reason":"Baseado no seu gosto por ficção científica complexa."}]}] };
-    return await runJsonMode(prompt, weeklyRelevantsSchema) as { categories: any[] };
+export const fetchWeeklyRelevants = async (prompt: string): Promise<WeeklyRelevantsAIResponse> => {
+    if (!API_KEY) return { categories: [/*...*/] };
+    return await runJsonMode(prompt, weeklyRelevantsSchema) as WeeklyRelevantsAIResponse;
 };
 
 export const fetchDuelAnalysis = async (prompt: string): Promise<DuelResult> => {
@@ -195,9 +199,9 @@ export const fetchDuelAnalysis = async (prompt: string): Promise<DuelResult> => 
     return await runJsonMode(prompt, duelSchema) as DuelResult;
 };
 
-export const fetchPersonalizedRadar = async (prompt: string): Promise<{ releases: { id: number; tmdbMediaType: 'movie' | 'tv'; title: string; reason: string; }[] }> => {
+export const fetchPersonalizedRadar = async (prompt: string): Promise<PersonalizedRadarAIResponse> => {
     if (!API_KEY) return { releases: [] };
-    return await runJsonMode(prompt, radarSchema) as { releases: any[] };
+    return await runJsonMode(prompt, radarSchema) as PersonalizedRadarAIResponse;
 };
 
 export const fetchBestTMDbMatch = async (prompt: string): Promise<number | null> => {

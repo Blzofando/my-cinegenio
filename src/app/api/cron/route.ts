@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const dayOfWeek = today.getUTCDay(); // 0 = Domingo, 1 = Segunda, 2 = Terça, etc.
 
     const tasksToRun: Promise<void>[] = [];
-    let tasksSummary: string[] = [];
+    const tasksSummary: string[] = [];
 
     // --- Tarefa Diária ---
     console.log("CRON: Verificando tarefa diária...");

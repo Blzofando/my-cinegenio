@@ -15,7 +15,7 @@ const processQueue = async () => {
     if (requestTask) {
         try {
             await requestTask();
-        } catch (error) {
+        } catch {
             // O erro é tratado no bloco catch da função que o chama
         }
     }
@@ -59,7 +59,7 @@ const internalSearchTMDb = async (query: string): Promise<TMDbSearchResult[]> =>
     const response = await fetch(url);
     if (!response.ok) throw new Error(`A busca no TMDb falhou com o status: ${response.status}`);
     const data = await response.json();
-    return data.results?.filter((r: any) => (r.media_type === 'movie' || r.media_type === 'tv')) || [];
+    return data.results?.filter((r: { media_type: string }) => (r.media_type === 'movie' || r.media_type === 'tv')) || [];
 };
 
 // --- INÍCIO DA ALTERAÇÃO ---
@@ -151,7 +151,7 @@ export const getTMDbDetails = (id: number, mediaType: 'movie' | 'tv') => {
     return addToQueue(() => internalGetTMDbDetails(id, mediaType));
 };
 
-export const getProviders = (data: any): WatchProviders | undefined => {
+export const getProviders = (data: { 'watch/providers'?: { results?: { BR?: any } } }): WatchProviders | undefined => {
     const providers = data?.['watch/providers']?.results?.BR;
     if (!providers) return undefined;
     return {

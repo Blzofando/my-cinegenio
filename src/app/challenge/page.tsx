@@ -7,7 +7,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { WatchedDataContext } from '@/contexts/WatchedDataContext';
 import { WatchlistContext } from '@/contexts/WatchlistContext';
-import { Challenge, ChallengeStep, WatchlistItem, DisplayableItem } from '@/types';
+import { Challenge, ChallengeStep, WatchlistItem } from '@/types';
 import { generateNewWeeklyChallenge, updateChallenge } from '@/lib/challenge';
 import DetailsModal from '@/components/shared/DetailsModal';
 

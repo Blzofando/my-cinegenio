@@ -6,6 +6,7 @@ import React, { useContext, useState, useMemo } from 'react';
 import { Recommendation, WatchlistItem, ManagedWatchedItem } from '@/types';
 import { WatchlistContext } from '@/contexts/WatchlistContext';
 import { WatchedDataContext } from '@/contexts/WatchedDataContext';
+import Image from 'next/image';
 
 const RecommendationCard = ({ recommendation }: { recommendation: Recommendation }) => {
     const { title, type, genre, synopsis, analysis, probabilities, posterUrl, id, tmdbMediaType } = recommendation;
@@ -48,7 +49,7 @@ const RecommendationCard = ({ recommendation }: { recommendation: Recommendation
                 <div className="relative p-6 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                     <div className="md:col-span-1 flex justify-center items-start">
                         {posterUrl ? (
-                             <img src={posterUrl} alt={`Pôster de ${title}`} className="w-48 md:w-full max-w-xs rounded-lg shadow-2xl"/>
+                             <Image src={posterUrl} alt={`Pôster de ${title}`} width={500} height={750} className="w-48 md:w-full max-w-xs h-auto rounded-lg shadow-2xl"/>
                         ) : (
                             <div className="w-48 md:w-full max-w-xs aspect-[2/3] bg-gray-700 rounded-lg flex items-center justify-center">
                                 <span className="text-gray-500">Sem Pôster</span>

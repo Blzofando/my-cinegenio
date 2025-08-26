@@ -23,7 +23,7 @@ const RateModal: React.FC<RateModalProps> = ({ item, onRate, onCancel }) => {
     return (
         <Modal onClose={onCancel}>
             <div className="bg-gray-800 border-gray-700 p-6 text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Você assistiu a "{item.title}"!</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">Você assistiu a &quot;{item.title}&quot;!</h2>
                 <p className="text-gray-400 mb-6">O que você achou?</p>
                 <div className="flex justify-center gap-2 sm:gap-4 mb-6">
                     {ratingOptions.map(opt => (

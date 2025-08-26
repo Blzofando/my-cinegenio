@@ -105,7 +105,7 @@ export default function WatchlistPage() {
                 popularity: details.popularity,
                 media_type: itemToMove.tmdbMediaType,
                 poster_path: details.poster_path,
-                genre_ids: details.genres.map((g: any) => g.id),
+                genre_ids: details.genres.map((g: { id: number }) => g.id),
                 release_date: details.release_date,
                 first_air_date: details.first_air_date,
             };

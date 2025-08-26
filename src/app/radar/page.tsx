@@ -70,7 +70,7 @@ const Carousel: React.FC<CarouselProps> = ({ title, items, onItemClick, isRanked
 
 // --- Componente Principal da Página ---
 export default function RadarPage() {
-    const { data: watchedData } = useContext(WatchedDataContext);
+    const { data } = useContext(WatchedDataContext);
     const { addToWatchlist, isInWatchlist } = useContext(WatchlistContext);
     const [isRelevantLoading, setIsRelevantLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(true);

@@ -41,7 +41,7 @@ const CarouselCard: React.FC<{ item: WeeklyRelevantItem; onClick: (item: WeeklyR
             <img src={item.posterUrl || 'https://placehold.co/400x600/374151/9ca3af?text=?'} alt={`Pôster de ${item.title}`} className="w-full h-60 object-cover transition-transform duration-300 group-hover:scale-105"/>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
             <div className="absolute inset-0 p-3 bg-black/70 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-center">
-                <p className="text-white text-xs italic">"{item.reason}"</p>
+                <p className="text-white text-xs italic">&quot;{item.reason}&quot;</p>
             </div>
         </div>
         <h3 className="text-white font-bold mt-2 truncate">{item.title}</h3>

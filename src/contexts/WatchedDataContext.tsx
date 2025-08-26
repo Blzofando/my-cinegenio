@@ -77,7 +77,7 @@ export const WatchedDataProvider = ({ children }: { children: React.ReactNode })
             let titleWithYear = '';
 
             if (item.media_type === 'tv') {
-                const isAnime = details.original_language === 'ja' && details.genres.some((g: any) => g.id === 16);
+                const isAnime = details.original_language === 'ja' && details.genres.some((g: { id: number; name: string }) => g.id === 16);
                 mediaType = isAnime ? 'Anime' : 'Série';
                 titleWithYear = `${details.name} (${details.first_air_date ? new Date(details.first_air_date).getFullYear() : 'N/A'})`;
             } else {

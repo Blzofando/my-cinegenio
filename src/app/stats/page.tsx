@@ -51,7 +51,7 @@ const PieChart = ({ data }: { data: Record<Rating, number> }) => {
 // Componente para o gráfico de barras
 const BarChart = ({ data }: { data: { genre: string, count: number }[] }) => {
     if (data.length === 0) {
-        return <div className="h-64 flex items-center justify-center text-gray-500">Adicione itens à lista 'Amei' para ver seus gêneros favoritos.</div>;
+        return <div className="h-64 flex items-center justify-center text-gray-500">Adicione itens à lista &apos;Amei&apos; para ver seus gêneros favoritos.</div>;
     }
     const maxCount = Math.max(...data.map(d => d.count), 1);
 
@@ -113,7 +113,7 @@ export default function StatsPage() {
                  <h1 className="text-4xl font-bold text-white mb-4">Ver Insights</h1>
                  <div className="text-center py-16 bg-gray-800 rounded-lg w-full max-w-lg">
                      <p className="text-2xl text-gray-400">Sua coleção está vazia.</p>
-                     <p className="text-gray-500 mt-2">Adicione itens em "Minha Coleção" para ver suas estatísticas.</p>
+                     <p className="text-gray-500 mt-2">Adicione itens em &quot;Minha Coleção&quot; para ver suas estatísticas.</p>
                  </div>
             </div>
         );

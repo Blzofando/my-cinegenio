@@ -3,14 +3,18 @@
 "use server";
 
 import { db } from '@/lib/firebase/client';
-import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
-import { AllManagedWatchedData, WeeklyRelevants } from '@/types';
+import { doc, getDoc, setDoc, Timestamp, collection } from "firebase/firestore";
+import { AllManagedWatchedData, WeeklyRelevants, WeeklyRelevantItem } from '@/types'; // <--- TIPO ADICIONADO AQUI
 import { formatWatchedDataForPrompt, fetchWeeklyRelevants } from './gemini';
 import { getTMDbDetails, searchByTitleAndYear } from './tmdb';
 
-// Onde salvaremos os metadados de atualização
+// Onde salvaremos a lista e os metadados de atualização
+const RELEVANTS_COLLECTION_NAME = 'weeklyRelevants';
 const METADATA_COLLECTION_NAME = 'metadata';
 const METADATA_DOC_ID = 'weeklyRelevantsMetadata';
+
+// Referência à coleção para uso futuro na tela de visualização
+export const weeklyRelevantsCollection = collection(db, RELEVANTS_COLLECTION_NAME);
 
 /**
  * Verifica se uma nova lista precisa ser gerada.
@@ -51,7 +55,6 @@ export const updateWeeklyRelevantsIfNeeded = async (watchedData: AllManagedWatch
 
     try {
         const formattedData = await formatWatchedDataForPrompt(watchedData);
-
         const prompt = `
             Você é o "CineGênio Pessoal". Sua tarefa é analisar o PERFIL DE GOSTO DO USUÁRIO e gerar uma lista de EXATAMENTE 50 filmes e séries JÁ LANÇADOS que sejam altamente relevantes.
 
@@ -73,24 +76,23 @@ export const updateWeeklyRelevantsIfNeeded = async (watchedData: AllManagedWatch
         const finalCategories = await Promise.all(
             aiResult.categories.map(async (category) => {
                 const enrichedItems = await Promise.all(
-                    category.items.map(async (itemFromAI: any) => {
+                    category.items.map(async (itemFromAI) => { // O tipo agora é inferido corretamente
                         try {
-                            const tmdbResult = await searchByTitleAndYear(itemFromAI.title, itemFromAI.year, itemFromAI.media_type as 'movie' | 'tv');
+                            const tmdbResult = await searchByTitleAndYear(itemFromAI.title, itemFromAI.year, itemFromAI.media_type);
                             if (!tmdbResult) {
                                 console.warn(`Nenhum resultado encontrado no TMDb para "${itemFromAI.title}" (${itemFromAI.year}). Item ignorado.`);
                                 return null;
                             }
                             const details = await getTMDbDetails(tmdbResult.id, tmdbResult.media_type as 'movie' | 'tv');
-                            const finalItem: any = {
+                            const finalItem: WeeklyRelevantItem = {
                                 id: details.id,
                                 tmdbMediaType: tmdbResult.media_type as 'movie' | 'tv',
                                 title: details.title || details.name || 'Título não encontrado',
                                 genre: details.genres?.[0]?.name || 'Indefinido',
                                 synopsis: details.overview || 'Sinopse não disponível.',
                                 reason: itemFromAI.reason,
-                                posterUrl: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : null,
+                                posterUrl: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : undefined,
                             };
-
                             return finalItem;
                         } catch (e) {
                             console.error(`Falha ao processar "${itemFromAI.title}":`, e);
@@ -98,7 +100,7 @@ export const updateWeeklyRelevantsIfNeeded = async (watchedData: AllManagedWatch
                         }
                     })
                 );
-                return { ...category, items: enrichedItems.filter(Boolean) };
+                return { ...category, items: enrichedItems.filter((item): item is WeeklyRelevantItem => item !== null) };
             })
         );
 
@@ -108,7 +110,7 @@ export const updateWeeklyRelevantsIfNeeded = async (watchedData: AllManagedWatch
             categories: nonEmptyCategories,
         };
 
-        const listDocRef = doc(db, 'weeklyRelevants', 'currentList');
+        const listDocRef = doc(weeklyRelevantsCollection, 'currentList');
         await setDoc(listDocRef, weeklyRelevants);
 
         const metadataRef = doc(db, METADATA_COLLECTION_NAME, METADATA_DOC_ID);

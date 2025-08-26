@@ -1,12 +1,9 @@
 // src/lib/recommendations.ts
 
 import { 
-    AllManagedWatchedData, 
-    ManagedWatchedItem, 
-    Recommendation, 
-    MediaType, 
+    AllManagedWatchedData,  
+    Recommendation,  
     DuelResult, 
-    TMDbSearchResult, 
     RadarItem, 
     SuggestionFilters 
 } from '@/types';
@@ -14,7 +11,6 @@ import {
 import { 
     searchTMDb,
     getTMDbDetails, 
-    getProviders, 
     getUpcomingMovies, 
     getOnTheAirTV, 
     fetchPosterUrl,
