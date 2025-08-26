@@ -1,6 +1,8 @@
-import { WatchProviders, TMDbSearchResult } from "@/types"; // Caminho corrigido
+// src/lib/tmdb.ts
 
-const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY; // <-- MUDANÇA CRUCIAL
+import { WatchProviders, TMDbSearchResult } from "@/types";
+
+const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 // Lógica de fila de requisições para evitar sobrecarga na API
@@ -62,13 +64,10 @@ const internalSearchTMDb = async (query: string): Promise<TMDbSearchResult[]> =>
     return data.results?.filter((r: { media_type: string }) => (r.media_type === 'movie' || r.media_type === 'tv')) || [];
 };
 
-// --- INÍCIO DA ALTERAÇÃO ---
-// Esta função foi reescrita para ser "autocorretiva"
 const internalGetTMDbDetails = async (id: number, mediaType: 'movie' | 'tv') => {
     const primaryUrl = `${BASE_URL}/${mediaType}/${id}?language=pt-BR&api_key=${API_KEY}&append_to_response=watch/providers,credits`;
     let response = await fetch(primaryUrl);
 
-    // Se falhar (404), tenta o tipo de mídia oposto
     if (response.status === 404) {
         console.warn(`[TMDbService] ID ${id} não encontrado como '${mediaType}'. Tentando tipo oposto.`);
         const fallbackMediaType = mediaType === 'movie' ? 'tv' : 'movie';
@@ -76,7 +75,6 @@ const internalGetTMDbDetails = async (id: number, mediaType: 'movie' | 'tv') => 
         response = await fetch(fallbackUrl);
     }
     
-    // Se ainda assim falhar (404), tenta a língua inglesa como último recurso
     if (response.status === 404) {
         const fallbackUrlEn = `${BASE_URL}/${mediaType}/${id}?language=en-US&api_key=${API_KEY}&append_to_response=watch/providers,credits`;
         response = await fetch(fallbackUrlEn);
@@ -87,15 +85,12 @@ const internalGetTMDbDetails = async (id: number, mediaType: 'movie' | 'tv') => 
     }
     
     const data = await response.json();
-    // Garante que o media_type retornado é o que realmente funcionou
     if (!data.media_type) {
-        // A API de detalhes não retorna media_type, então adicionamos manualmente com base no sucesso da URL
         const successfulUrl = new URL(response.url);
-        data.media_type = successfulUrl.pathname.split('/')[2]; // Pega 'movie' ou 'tv' da URL
+        data.media_type = successfulUrl.pathname.split('/')[2];
     }
     return data;
 };
-// --- FIM DA ALTERAÇÃO ---
 
 const internalGetUpcomingMovies = async (): Promise<TMDbSearchResult[]> => {
     const url = `${BASE_URL}/movie/upcoming?language=pt-BR&page=1&region=BR&api_key=${API_KEY}`;
