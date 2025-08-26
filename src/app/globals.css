@@ -1,7 +1,9 @@
 /* src/app/globals.css */
-
 @import "tailwindcss";
 
+/* ----------------------------
+   animações existentes (mantive as suas)
+   ---------------------------- */
 @keyframes duel-left {
   0% { transform: translateX(0); }
   100% { transform: translateX(100px); }
@@ -27,29 +29,191 @@
 .animate-poeira { animation: poeira 1.2s ease-in-out; }
 .animate-trophy-up { animation: trophy-up 0.5s ease-out forwards; }
 
-/* Adicionar no final de src/app/globals.css */
-
 @keyframes pulse-vs {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.25);
-    opacity: 0.75;
-  }
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.75; }
 }
-
 @keyframes comic-burst {
   0% { transform: scale(0.5); opacity: 0; }
   50% { transform: scale(1.5); opacity: 1; }
   100% { transform: scale(1.2); opacity: 0; }
 }
+.animate-pulse-vs { animation: pulse-vs 1.2s ease-in-out infinite; }
+.animate-comic-burst { animation: comic-burst 0.8s ease-in-out forwards; }
 
-/* Classes que vamos usar nos componentes */
-.animate-pulse-vs {
-  animation: pulse-vs 1.2s ease-in-out infinite;
+/* fundo radial sutil */
+.bg-radial {
+  background: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.12), transparent 40%),
+              radial-gradient(circle at 80% 30%, rgba(236,72,153,0.08), transparent 50%),
+              radial-gradient(circle at 40% 80%, rgba(139,92,246,0.12), transparent 45%);
 }
-.animate-comic-burst {
-  animation: comic-burst 0.8s ease-in-out forwards;
+
+/* gradiente animado (mais lento) */
+@keyframes gradient-slide {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animated-gradient {
+  background: linear-gradient(90deg,
+    #02000a 0%,
+    #070021 25%,
+    #11002f 50%,
+    #1a0346 75%,
+    #02000a 100%);
+  background-size: 200% 200%;
+  animation: gradient-slide 36s linear infinite;
+  will-change: background-position;
+}
+
+/* overlay escuro acima do gradient para contraste */
+.gradient-overlay { background: rgba(0,0,0,0.46); }
+
+/* HEADER FIXO (vazio/minimal) */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px; /* altura fixa do header */
+  z-index: 60;
+  pointer-events: none;
+}
+
+/* garante que o conteúdo comece abaixo do header */
+.main-with-fixed-header { padding-top: 72px; }
+
+/* ----------------------------
+   HERO (identidade) - maior no mobile
+   ---------------------------- */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 12px;
+  min-height: 48vh;
+  transition: transform 360ms cubic-bezier(.2,.9,.2,1), opacity 360ms ease;
+  will-change: transform, opacity;
+}
+
+/* hero visível / escondido (JS toggles) */
+.hero--visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.hero--hidden  { transform: translateY(-14px); opacity: 0; pointer-events: none; }
+
+.hero-left { max-width: 62%; }
+
+/* título maior e empilhado */
+.hero-title { font-weight: 900; font-size: 46px; line-height: 1; color: #fff; }
+.hero-title .subtitle { display:block; font-size:20px; margin-top:6px; color: #c79cff; font-weight:700; }
+
+.hero-sub {
+  color: #cfc7e8;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* claquete decor: maior e com glow mais forte */
+.hero-decor { display:flex; align-items:center; justify-content:center; width:36%; }
+.hero-decor img {
+  max-width:160px;
+  width: 28vw;
+  height: auto;
+  border-radius: 10px;
+  filter: drop-shadow(0 0 18px rgba(123,57,255,0.32));
+  transform: translateY(0);
+}
+
+/* CTA destacado e mais largo (visualmente ocupa 2 colunas) */
+.cta-wide {
+  width: 100%;
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(90deg,#5a20c8 4%, #9b57ff 100%);
+  box-shadow: 0 16px 40px rgba(123,57,255,0.12);
+  font-weight: 800;
+  font-size: 16px;
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.cta-wide:hover { transform: translateY(-2px); box-shadow: 0 20px 46px rgba(123,57,255,0.14); }
+
+/* ----------------------------
+   GRID e CARDS (funções)
+   ---------------------------- */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 12px; /* menos que antes; controla subida das funções */
+  padding-bottom: 140px;
+  position: relative;
+}
+
+/* feature-card: único fundo — removi pseudo ::before (nada de "caixa dupla") */
+.feature-card {
+  position: relative;
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 92px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-align:center;
+  background: linear-gradient(180deg, rgba(16,6,34,0.98), rgba(18,7,36,0.99));
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 20px rgba(19,1,51,0.10);
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+
+/* icon e titulo levemente menores para não cortar */
+.feature-icon { font-size: 24px; filter: drop-shadow(0 0 6px rgba(123,57,255,0.12)); }
+.feature-title { font-weight:700; font-size:13px; color:#efeaff; }
+
+/* hover discreto */
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 18px 36px rgba(19,1,51,0.14); }
+
+/* ----------------------------
+   BADGE
+   ---------------------------- */
+.badge-dark {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:9999px;
+  background: linear-gradient(90deg,#05001a 0%, #22033c 80%);
+  color:#fff;
+  font-weight:700;
+  font-size:12px;
+  box-shadow: 0 8px 26px rgba(19,1,51,0.12);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+.badge-emoji { font-size:18px; transform: translateY(-1px); }
+
+/* neon text */
+.text-neon {
+  text-shadow: 0 0 8px rgba(142,0,255,0.85), 0 0 28px rgba(19,1,51,0.36);
+  -webkit-text-stroke: 0.35px rgba(0,0,0,0.12);
+}
+
+/* footer fixo (mobile) */
+.footer-fixed { position: fixed; bottom: 0; left: 0; right: 0; z-index: 70; }
+
+/* badge wrapper util (se usado no layout) */
+.badge-wrapper { position: absolute; right: 12px; top: 8px; z-index: 30; }
+
+/* responsividade fina */
+@media(min-width:1024px){
+  .hero { min-height: 38vh; }
+  .hero-decor img { max-width: 220px; width: 12vw; }
+  .main-with-fixed-header{ padding-top: 88px; }
+  .app-header{ height: 88px; }
+  .hero-title { font-size: 56px; }
+  .cta-wide { padding: 18px 22px; font-size: 18px; }
 }
