@@ -9,6 +9,7 @@ import { WeeklyRelevants, WeeklyRelevantCategory, WeeklyRelevantItem, WatchlistI
 import { weeklyRelevantsCollection } from '@/lib/firestore';
 import { WatchlistContext } from '@/contexts/WatchlistContext';
 import DetailsModal from '@/components/shared/DetailsModal';
+import Image from 'next/image';
 
 // --- Componentes de Carregamento (Esqueleto) ---
 const CardSkeleton = () => (
@@ -39,7 +40,7 @@ const LoadingState = () => (
 const CarouselCard: React.FC<{ item: WeeklyRelevantItem; onClick: (item: WeeklyRelevantItem) => void; }> = ({ item, onClick }) => (
     <div onClick={() => onClick(item)} className="flex-shrink-0 w-40 cursor-pointer group">
         <div className="relative overflow-hidden rounded-lg shadow-lg">
-            <img src={item.posterUrl || 'https://placehold.co/400x600/374151/9ca3af?text=?'} alt={`Pôster de ${item.title}`} className="w-full h-60 object-cover transition-transform duration-300 group-hover:scale-105"/>
+            <Image src={item.posterUrl || 'https://placehold.co/400x600/374151/9ca3af?text=?'} alt={`Pôster de ${item.title}`} width={400} height={600} className="w-full h-60 object-cover transition-transform duration-300 group-hover:scale-105"/>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
             <div className="absolute inset-0 p-3 bg-black/70 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-center">
                 <p className="text-white text-xs italic">&quot;{item.reason}&quot;</p>

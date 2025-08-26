@@ -5,6 +5,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { TMDbSearchResult } from '@/types';
 import { searchTMDb } from '@/lib/tmdb'; // Caminho corrigido
+import Image from 'next/image';
 
 interface TitleSelectorProps {
     onTitleSelect: (selection: TMDbSearchResult | null) => void;
@@ -57,7 +58,7 @@ const TitleSelector: React.FC<TitleSelectorProps> = ({ onTitleSelect, label }) =
         return (
             <div className="bg-gray-700/50 p-4 rounded-lg">
                 <div className="flex items-start gap-4">
-                    <img src={selectedTitle.poster_path ? `https://image.tmdb.org/t/p/w92${selectedTitle.poster_path}` : 'https://placehold.co/80x120/374151/9ca3af?text=?'} alt="poster" className="w-20 h-[120px] object-cover rounded-md bg-gray-800"/>
+                    <Image src={selectedTitle.poster_path ? `https://image.tmdb.org/t/p/w92${selectedTitle.poster_path}` : 'https://placehold.co/80x120/374151/9ca3af?text=?'} alt="poster" width={80} height={120} className="w-20 h-[120px] object-cover rounded-md bg-gray-800"/>
                     <div className="flex-grow text-left">
                         <p className="font-bold text-white text-lg">{selectedTitle.title || selectedTitle.name}</p>
                         <p className="text-sm text-gray-400">{selectedTitle.media_type === 'movie' ? 'Filme' : 'Série'} ({new Date(selectedTitle.release_date || selectedTitle.first_air_date || '').getFullYear()})</p>
@@ -84,7 +85,7 @@ const TitleSelector: React.FC<TitleSelectorProps> = ({ onTitleSelect, label }) =
                 <ul className="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded-lg mt-1 max-h-80 overflow-y-auto shadow-lg">
                     {suggestions.map(s => (
                         <li key={s.id} onClick={() => handleSelect(s)} className="p-3 hover:bg-indigo-600 cursor-pointer flex items-start gap-4 text-left">
-                            <img src={s.poster_path ? `https://image.tmdb.org/t/p/w92${s.poster_path}` : 'https://placehold.co/50x75/374151/9ca3af?text=?'} alt="poster" className="w-12 h-[72px] object-cover rounded-md bg-gray-800 flex-shrink-0"/>
+                            <Image src={s.poster_path ? `https://image.tmdb.org/t/p/w92${s.poster_path}` : 'https://placehold.co/50x75/374151/9ca3af?text=?'} alt="poster" width={50} height={75} className="w-12 h-[72px] object-cover rounded-md bg-gray-800 flex-shrink-0"/>
                             <div className="flex-grow">
                                 <p className="font-bold text-white leading-tight">{s.title || s.name}</p>
                                 <p className="text-sm text-gray-400">{s.media_type === 'movie' ? 'Série' : 'Filme'} ({new Date(s.release_date || s.first_air_date || '').getFullYear()})</p>

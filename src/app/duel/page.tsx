@@ -7,6 +7,7 @@ import { WatchedDataContext } from '@/contexts/WatchedDataContext';
 import { DuelResult, TMDbSearchResult } from '@/types';
 import { getDuelAnalysis } from '@/lib/recommendations';
 import TitleSelector from '@/components/shared/TitleSelector';
+import Image from 'next/image';
 
 // --- Componente de Animação da Batalha ---
 interface BattleAnimationProps {
@@ -26,9 +27,10 @@ const BattleAnimation: React.FC<BattleAnimationProps> = ({ poster1, poster2 }) =
     return (
         <div className="mt-10 w-full max-w-xl flex flex-col items-center justify-center animate-fade-in">
             <div className="relative w-full h-48 flex justify-center items-center">
-                <img 
+                <Image 
                     src={poster1 || 'https://placehold.co/150x225/374151/9ca3af?text=?'} 
                     alt="Pôster 1" 
+                    width={150} height={225}
                     className="w-28 h-42 object-cover rounded-md shadow-lg absolute left-0 animate-duel-left"
                 />
                 
@@ -36,9 +38,10 @@ const BattleAnimation: React.FC<BattleAnimationProps> = ({ poster1, poster2 }) =
                     VS
                 </div>
 
-                <img 
+                <Image 
                     src={poster2 || 'https://placehold.co/150x225/374151/9ca3af?text=?'} 
                     alt="Pôster 2" 
+                    width={150} height={225}
                     className="w-28 h-42 object-cover rounded-md shadow-lg absolute right-0 animate-duel-right"
                 />
 
@@ -64,7 +67,7 @@ const WinnerDisplay: React.FC<WinnerDisplayProps> = ({ result, onReset }) => {
         <div className="mt-10 w-full max-w-2xl flex flex-col items-center animate-fade-in">
             <div className="relative">
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-5xl animate-trophy-up">🏆</div>
-                <img src={winner.posterUrl || 'https://placehold.co/200x300/374151/9ca3af?text=?'} alt={`Pôster de ${winner.title}`} className="w-48 h-72 object-cover rounded-md shadow-2xl mb-4 border-4 border-yellow-400"/>
+                <Image src={winner.posterUrl || 'https://placehold.co/200x300/374151/9ca3af?text=?'} alt={`Pôster de ${winner.title}`} width={200} height={300} className="w-48 h-72 object-cover rounded-md shadow-2xl mb-4 border-4 border-yellow-400"/>
             </div>
             <h2 className="text-3xl font-bold text-white mt-4 text-center">{winner.title}</h2>
             <div className="mt-4 bg-gray-800 rounded-lg p-4 border border-green-500/50">

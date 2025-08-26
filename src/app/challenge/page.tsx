@@ -10,6 +10,7 @@ import { WatchlistContext } from '@/contexts/WatchlistContext';
 import { Challenge, ChallengeStep, WatchlistItem } from '@/types';
 import { generateNewWeeklyChallenge, updateChallenge } from '@/lib/challenge';
 import DetailsModal from '@/components/shared/DetailsModal';
+import Image from 'next/image';
 
 // --- Componentes Internos ---
 const LoadingSpinner = () => (
@@ -26,7 +27,7 @@ interface StepCardProps {
 const StepCard: React.FC<StepCardProps> = ({ step, onClick }) => {
     return (
         <div className="relative bg-gray-800 rounded-lg group overflow-hidden shadow-lg cursor-pointer" onClick={onClick}>
-            <img src={step.posterUrl || 'https://placehold.co/500x750/374151/9ca3af?text=?'} alt={`Pôster de ${step.title}`} className="w-full h-full object-cover aspect-[2/3] transition-transform duration-300 group-hover:scale-105"/>
+            <Image src={step.posterUrl || '/placeholder.png'} alt={`Pôster de ${step.title}`} width={500} height={750} className="w-full h-full object-cover aspect-[2/3] transition-transform duration-300 group-hover:scale-105"/>
             {step.completed && (
                 <div className="absolute inset-0 bg-green-900/70 backdrop-blur-sm flex flex-col items-center justify-center">
                     <span className="text-5xl">✅</span>

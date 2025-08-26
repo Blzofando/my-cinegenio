@@ -14,6 +14,7 @@ import AddModal from '@/components/shared/AddModal';
 import RateModal from '@/components/watchlist/RateModal';         // <-- Criaremos este
 import RouletteModal from '@/components/watchlist/RouletteModal'; // <-- Criaremos este
 import FilterModal from '@/components/watchlist/FilterModal';     // <-- Criaremos este
+import Image from 'next/image';
 
 type SortType = 'addedAt-desc' | 'addedAt-asc' | 'title-asc' | 'title-desc';
 
@@ -214,7 +215,7 @@ export default function WatchlistPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {filteredAndSortedItems.map(item => (
                         <div key={item.id} className="relative bg-gray-800 rounded-lg group overflow-hidden shadow-lg cursor-pointer" onClick={() => handleItemClick(item)}>
-                            <img src={item.posterUrl || 'https://placehold.co/500x750/374151/9ca3af?text=?'} alt={`Pôster de ${item.title}`} className="w-full h-full object-cover aspect-[2/3]"/>
+                            <Image src={item.posterUrl || 'https://placehold.co/500x750/374151/9ca3af?text=?'} alt={`Pôster de ${item.title}`} width={500} height={750} className="w-full h-full object-cover aspect-[2/3]"/>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 text-center">
                                 <h3 className="font-bold text-white text-base leading-tight mb-3">{item.title}</h3>
                                 <button onClick={(e) => { e.stopPropagation(); setItemToRate(item); setModal('rate'); }} disabled={isAdding} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded-lg text-sm mb-2 transition-colors disabled:bg-gray-500">Já Assisti</button>

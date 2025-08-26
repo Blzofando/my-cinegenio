@@ -8,6 +8,7 @@ import { WatchedDataContext } from '@/contexts/WatchedDataContext';
 import DetailsModal from '@/components/shared/DetailsModal';
 import AddModal from '@/components/shared/AddModal';
 import FilterModal from '@/components/collection/FilterModal';
+import Image from 'next/image';
 
 // --- Estilos e Configurações ---
 const ratingStyles: Record<Rating, { bg: string, text: string, border: string }> = {
@@ -34,7 +35,7 @@ interface ItemCardProps {
 const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
     return (
         <div onClick={onClick} className="relative bg-gray-800 rounded-lg group cursor-pointer overflow-hidden shadow-lg border-2 border-transparent hover:border-indigo-500 transition-all duration-300 aspect-[2/3]">
-            {item.posterUrl ? <img src={item.posterUrl} alt={`Pôster de ${item.title}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" /> : <div className="w-full h-full bg-gray-700 flex items-center justify-center text-center p-2"><span className="text-gray-500 text-sm">Pôster não disponível</span></div>}
+            {item.posterUrl ? <Image src={item.posterUrl} alt={`Pôster de ${item.title}`} width={500} height={750} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gray-700 flex items-center justify-center text-center p-2"><span className="text-gray-500 text-sm">Pôster não disponível</span></div>}
             <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 right-0 p-3">
                 <h3 className="font-bold text-white text-base truncate leading-tight" title={item.title}>{item.title}</h3>

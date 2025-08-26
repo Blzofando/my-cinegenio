@@ -9,6 +9,7 @@ import { WatchlistContext } from '@/contexts/WatchlistContext';
 import { RadarItem, WatchlistItem, DisplayableItem } from '@/types';
 import { relevantReleasesCollection, tmdbRadarCacheCollection } from '@/lib/firestore';
 import DetailsModal from '@/components/shared/DetailsModal';
+import Image from 'next/image';
 
 // --- Componente de Esqueleto para o Card ---
 const CarouselCardSkeleton = () => (
@@ -43,7 +44,7 @@ const CarouselCard: React.FC<CarouselCardProps> = ({ item, onClick, rank }) => {
         <div onClick={onClick} className="flex-shrink-0 w-40 cursor-pointer group">
             <div className="relative overflow-hidden rounded-lg shadow-lg">
                 {rank && (<div className="absolute -left-1 -top-1 z-10"><svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 H 60 L 0 60 V 0 Z" fill="#111827" fillOpacity="0.7"/><text x="10" y="25" fontFamily="Arial, sans-serif" fontSize="20" fontWeight="bold" fill="white">{rank}</text></svg></div>)}
-                <img src={item.posterUrl || 'https://placehold.co/400x600/374151/9ca3af?text=?'} alt={`Pôster de ${item.title}`} className="w-full h-60 object-cover transition-transform duration-300 group-hover:scale-105"/>
+                <Image src={item.posterUrl || 'https://placehold.co/400x600/374151/9ca3af?text=?'} alt={`Pôster de ${item.title}`} width={400} height={600} className="w-full h-60 object-cover transition-transform duration-300 group-hover:scale-105"/>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
             </div>
             <h3 className="text-white font-bold mt-2 truncate">{item.title}</h3>
