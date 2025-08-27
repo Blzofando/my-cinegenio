@@ -24,14 +24,18 @@ const shouldUpdateTMDbRadar = async (): Promise<boolean> => {
     }
 
     const lastUpdate = (metadataSnap.data().lastUpdate as Timestamp).toDate();
-    const daysSinceLastUpdate = (new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24);
+    const today = new Date();
 
-    if (daysSinceLastUpdate >= UPDATE_INTERVAL_DAYS_TMDb) {
-        console.log(`Já se passaram ${daysSinceLastUpdate.toFixed(1)} dias. Nova atualização do Radar TMDb necessária.`);
+    // Comparamos apenas a data (AAAA-MM-DD), ignorando a hora
+    const lastUpdateDateString = lastUpdate.toISOString().split('T')[0];
+    const todayDateString = today.toISOString().split('T')[0];
+
+    if (lastUpdateDateString !== todayDateString) {
+        console.log(`A última atualização foi em ${lastUpdateDateString}. Nova atualização para o dia ${todayDateString} necessária.`);
         return true;
     }
 
-    console.log(`Cache do Radar TMDb está atualizado. Última atualização há ${daysSinceLastUpdate.toFixed(1)} dias.`);
+    console.log(`Cache do Radar TMDb já atualizado para hoje (${todayDateString}).`);
     return false;
 };
 
