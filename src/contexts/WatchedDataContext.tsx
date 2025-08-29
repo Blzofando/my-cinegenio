@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase/client';
 import { AllManagedWatchedData, Rating, ManagedWatchedItem, TMDbSearchResult, MediaType } from '@/types';
 import { addWatchedItem, removeWatchedItem, updateWatchedItem } from '@/lib/firestore';
 import { WatchlistContext } from './WatchlistContext';
-import { getTMDbDetails, getProviders } from '@/lib/tmdb'; // Importações necessárias
+import { getTMDbDetails, getProviders } from '@/lib/tmdb';
 
 const initialData: AllManagedWatchedData = {
     amei: [], gostei: [], meh: [], naoGostei: []
@@ -18,8 +18,8 @@ interface IWatchedDataContext {
     data: AllManagedWatchedData;
     loading: boolean;
     addItem: (item: TMDbSearchResult | null, rating: Rating) => Promise<void>;
-    removeItem: (id: number) => Promise<void>; // Retorno de Promise para consistência
-    updateItem: (item: ManagedWatchedItem) => Promise<void>; // Retorno de Promise para consistência
+    removeItem: (id: number) => Promise<void>;
+    updateItem: (item: ManagedWatchedItem) => Promise<void>;
 }
 
 export const WatchedDataContext = createContext<IWatchedDataContext>({
@@ -84,6 +84,9 @@ export const WatchedDataProvider = ({ children }: { children: React.ReactNode })
                 mediaType = 'Filme';
                 titleWithYear = `${details.title} (${details.release_date ? new Date(details.release_date).getFullYear() : 'N/A'})`;
             }
+
+            // A CORREÇÃO ESTÁ AQUI:
+            const providers = getProviders(details);
             
             const newItem: ManagedWatchedItem = {
                 id: details.id,
@@ -94,7 +97,10 @@ export const WatchedDataProvider = ({ children }: { children: React.ReactNode })
                 synopsis: details.overview || 'Sinopse não disponível.',
                 posterUrl: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : undefined,
                 voteAverage: details.vote_average ? parseFloat(details.vote_average.toFixed(1)) : 0,
-                watchProviders: getProviders(details),
+                watchProviders: {
+                    link: providers?.link || '',
+                    flatrate: providers?.flatrate || [], // Garante que flatrate nunca será undefined
+                },
                 rating,
                 createdAt: Date.now(),
             };
