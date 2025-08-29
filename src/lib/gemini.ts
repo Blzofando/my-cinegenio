@@ -147,7 +147,7 @@ const challengeSchema: FunctionDeclarationSchema = {
 
 
 // --- Função Auxiliar ---
-async function runJsonMode(prompt: string, schema: FunctionDeclarationSchema) {
+export async function runJsonMode(prompt: string, schema: FunctionDeclarationSchema) {
     if (!API_KEY) throw new Error("A chave da API do Gemini não está disponível.");
     
     const result = await model.generateContent({

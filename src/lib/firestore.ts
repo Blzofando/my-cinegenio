@@ -35,6 +35,17 @@ export const updateWatchedItem = async (id: number, updatedData: Partial<Managed
 // --- COLEÇÃO DA WATCHLIST ---
 const WATCHLIST_COLLECTION_NAME = 'watchlist';
 
+// Adicionar esta função em src/lib/firestore.ts
+
+export const getWatchlistItems = async (): Promise<WatchlistItem[]> => {
+    const querySnapshot = await getDocs(collection(db, WATCHLIST_COLLECTION_NAME));
+    const items: WatchlistItem[] = [];
+    querySnapshot.forEach((doc) => {
+        items.push(doc.data() as WatchlistItem);
+    });
+    return items;
+};
+
 export const addToWatchlist = async (itemData: WatchlistItem): Promise<void> => {
     const itemDocRef = doc(db, WATCHLIST_COLLECTION_NAME, itemData.id.toString());
     await setDoc(itemDocRef, itemData);
