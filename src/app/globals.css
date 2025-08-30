@@ -58,9 +58,10 @@
 /* Fundo base (estático) */
 body {
   position: relative;
-  min-height: 100vh;
+  /* USA min-height para garantir que cubra a tela mas possa crescer */
+  min-height: 100vh; 
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden; /* Trava rolagem horizontal */
   color: var(--text-color);
   background: linear-gradient(180deg,
     var(--base-dark-1) 0%,
@@ -68,7 +69,6 @@ body {
     var(--base-mid)    50%,
     var(--base-dark-2) 75%,
     var(--base-dark-1) 100%);
-  /* Mantemos contraste legível com o conteúdo */
 }
 
 /* -----------------------------
@@ -278,7 +278,8 @@ s
 .mobile-content {
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+    /* Usa flex-grow: 1 para ocupar o espaço disponível */
+    flex-grow: 1;
 }
 
 /* wrapper CTA + grid */
@@ -301,7 +302,8 @@ s
     gap: 12px;
     margin-top: 12px;
     padding-bottom: 24px;
-    flex: 1 1 auto;
+    /* Faz com que a grade tente ocupar o espaço restante */
+    flex-grow: 1; 
     align-content: start;
 }
 
@@ -309,22 +311,20 @@ s
     position: relative;
     border-radius: 12px;
     padding: 14px;
-    min-height: 88px;
+    /* Remove min-height para deixar a altura flexível */
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     gap:6px;
     text-align:center;
-    /* Novo gradiente para os cards - tons de azul mais escuros */
     background: linear-gradient(180deg, rgba(21, 25, 48, 0.98), rgba(10, 15, 29, 0.99));
     border: 1px solid rgba(255,255,255,0.03);
     /* Sombra ajustada para o novo tema */
     box-shadow: 0 8px 20px rgba(10,15,29,0.10); 
     transition: transform .14s ease, box-shadow .14s ease, border-bottom .14s ease; /* Adicionado border-bottom */
-
-    /* Efeito 3D sutil: borda inferior mais escura */
-    border-bottom: 4px solid rgba(0, 0, 0, 0.3); /* Base */
+    /* Garante que o card preencha a célula da grade */
+    height: 100%; 
 }
 
 .feature-card:hover { 
