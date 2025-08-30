@@ -35,7 +35,9 @@
     100% { transform: scale(1.2); opacity: 0; }
 }
 .animate-pulse-vs { animation: pulse-vs 1.2s ease-in-out infinite; }
-.animate-comic-burst { animation: comic-burst 0.8s ease-in-out forwards; }
+.animate-comic-burst { animation: comic-burst 10.8s ease-in-out forwards; }
+
+
 
 /* ----------------------------
    background radial + gradient animado (lento)
@@ -86,7 +88,7 @@ body {
     var(--base-dark-1) 100%);
   background-size: 300% 300%;
   /* animação leve do gradiente geral (não repetitiva/habitual) */
-  animation: gradient-dance 28s cubic-bezier(.22,.65,.32,.95) infinite;
+  animation: gradient-dance 35s cubic-bezier(.22,.65,.32,.95) infinite;
 }
 
 /* movimento fluido e irregular do gradiente de fundo */
@@ -122,10 +124,10 @@ body {
   /* 3 animações: deslocamento principal, pulso de opacidade, e um jitter irregular via steps */
   animation:
     cloudShift var(--cloud-speed) cubic-bezier(.25,.46,.45,.95) infinite,
-    cloudPulse calc(var(--cloud-speed) * 1.35) ease-in-out infinite,
-    cloudJitter 9s steps(6,end) infinite;
+    cloudPulse calc(var(--cloud-speed) * 3.35) ease-in-out infinite,
+    cloudJitter 13s steps(6,end) infinite;
   /* começar em fase diferente para evitar sincronia com ::after */
-  animation-delay: 0s, -3s, -1s;
+  animation-delay: 0s, -5s, -3s;
 }
 
 .animated-gradient::after{
@@ -149,9 +151,9 @@ body {
     cloudShiftAlt calc(var(--alt-speed) * 1.02) cubic-bezier(.35,.25,.25,.95) infinite,
     dustDrift var(--dust-speed) linear infinite,
     dustPulse 16s ease-in-out infinite,
-    dustJitter 11s steps(4,end) infinite;
+    dustJitter 16s steps(4,end) infinite;
   /* negative delays para já iniciarem "embaralhadas" */
-  animation-delay: -2.2s, -6s, -3.6s, -1s;
+  animation-delay: -3.2s, -7s, -4.6s, -2s;
 }
 
 /* movimentos "principais" com paradas e saltos irregulares (X/Y) */
@@ -444,7 +446,6 @@ html, body {
     padding: 0;
     overflow-x: hidden;
     overscroll-behavior-y: contain;
-    background-color: #000; /* Garante que não haja branco */
 }
 
 /* responsividade desktop */
