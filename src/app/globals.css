@@ -38,30 +38,31 @@
 .animate-comic-burst { animation: comic-burst 0.8s ease-in-out forwards; }
 
 /* ----------------------------
-    background radial + gradient animado (lento)
-    ---------------------------- */
-/* Removendo o .bg-radial antigo e redefinindo um novo gradiente de fundo padrão */
+   background radial + gradient animado (lento)
+   SUBSTITUIÇÃO: move blobs para .animated-gradient
+   ---------------------------- */
+
+/* Variáveis (mantive as suas) */
 :root{
   --base-dark-1: #0a0f1d;
   --base-dark-2: #151a30;
   --base-mid:    #2a3250;
   --text-color:  #efeaff;
 
-  --cloud-blur: 120px;    /* aumenta/ diminish o desfoque das nuvens */
-  --dust-density-size: 5px; /* tamanho do padrão repetido das partículas */
-  --dust-opacity: 0.06;   /* opacidade das partículas finas */
-  --cloud-speed: 20s;     /* velocidade das nuvens grandes */
-  --alt-speed: 12s;       /* velocidade da mancha secundária */
-  --dust-speed: 28s;      /* velocidade da poeira fina */
+  --cloud-blur: 120px;
+  --dust-density-size: 5px;
+  --dust-opacity: 0.06;
+  --cloud-speed: 20s;
+  --alt-speed: 12s;
+  --dust-speed: 28s;
 }
 
-/* Fundo base (estático) */
+/* Fundo base (estático) aplicado ao body — sem pseudo-elements aqui */
 body {
   position: relative;
-  /* USA min-height para garantir que cubra a tela mas possa crescer */
-  min-height: 100vh; 
+  min-height: 100vh;
   margin: 0;
-  overflow-x: hidden; /* Trava rolagem horizontal */
+  overflow-x: hidden;
   color: var(--text-color);
   background: linear-gradient(180deg,
     var(--base-dark-1) 0%,
@@ -71,16 +72,45 @@ body {
     var(--base-dark-1) 100%);
 }
 
-/* -----------------------------
-   ::before -> nuvem grande (blur suave)
-   ::after  -> nuvem média + camada de partículas finas (repeating-radial)
-   -----------------------------*/
+/* ---------- animated-gradient container (ELEMENTO DO JSX) - VERSÃO "POEIRA CAÓTICA" ---------- */
+.animated-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: -30; /* atrás do conteúdo principal */
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    var(--base-dark-1) 0%,
+    var(--base-dark-2) 25%,
+    var(--base-mid) 50%,
+    var(--base-dark-2) 75%,
+    var(--base-dark-1) 100%);
+  background-size: 300% 300%;
+  /* animação leve do gradiente geral (não repetitiva/habitual) */
+  animation: gradient-dance 28s cubic-bezier(.22,.65,.32,.95) infinite;
+}
 
-/* Nuvem grande (mancha lenta, mistura bastante) */
-body::before{
+/* movimento fluido e irregular do gradiente de fundo */
+@keyframes gradient-dance {
+  0%   { background-position: 8% 12%; }
+  12%  { background-position: 52% 18%; }
+  23%  { background-position: 78% 42%; }
+  37%  { background-position: 45% 72%; }
+  51%  { background-position: 18% 55%; }
+  66%  { background-position: 85% 20%; }
+  82%  { background-position: 60% 88%; }
+  100% { background-position: 8% 12%; }
+}
+
+/* -------------------------------------------------------------
+   pseudo-elements ligados ao elemento fixo .animated-gradient
+   -> ::before = nuvem grande (lenta, mistura)
+   -> ::after  = nuvem média + poeira fina (mais agitada)
+   -------------------------------------------------------------*/
+
+.animated-gradient::before{
   content: "";
   position: absolute;
-  inset: -20% -10% -20% -10%; /* ocupa e extravasa a tela para suavizar bordas */
+  inset: -28% -12% -28% -12%;
   pointer-events: none;
   background:
     radial-gradient(40% 35% at 20% 30%, rgba(120,130,255,0.18), transparent 20%),
@@ -88,90 +118,113 @@ body::before{
   filter: blur(var(--cloud-blur));
   opacity: 0.92;
   mix-blend-mode: screen;
-  transform-origin: center;
-  will-change: transform, opacity, background-position;
+  will-change: transform, opacity, background-position, filter;
+  /* 3 animações: deslocamento principal, pulso de opacidade, e um jitter irregular via steps */
   animation:
-    cloudShift var(--cloud-speed) ease-in-out infinite,
-    cloudPulse calc(var(--cloud-speed) * 1.3) ease-in-out infinite;
+    cloudShift var(--cloud-speed) cubic-bezier(.25,.46,.45,.95) infinite,
+    cloudPulse calc(var(--cloud-speed) * 1.35) ease-in-out infinite,
+    cloudJitter 9s steps(6,end) infinite;
+  /* começar em fase diferente para evitar sincronia com ::after */
+  animation-delay: 0s, -3s, -1s;
 }
 
-/* Nuvem média + poeira fina (repeating pattern para as partículas) */
-body::after{
+.animated-gradient::after{
   content: "";
   position: absolute;
-  inset: -10% -5% -10% -5%;
+  inset: -12% -6% -12% -6%;
   pointer-events: none;
-  /* ordem das camadas: nuvem menor, partículas finas, glow localizado */
   background:
-    /* nuvem pequena / mancha */
     radial-gradient(35% 28% at 72% 20%, rgba(80,200,255,0.10), transparent 30%),
-    /* partículas finas (repeating tiny dots) */
     repeating-radial-gradient(circle at 0 0,
       rgba(255,255,255,var(--dust-opacity)) 0 1px,
       transparent 1px calc(6px)),
-    /* glow/contraste adicional */
     radial-gradient(20% 18% at 25% 75%, rgba(255,180,220,0.06), transparent 35%);
   filter: blur(28px);
   opacity: 0.88;
   mix-blend-mode: screen;
   background-size: cover, var(--dust-density-size) var(--dust-density-size), cover;
-  will-change: background-position, transform, opacity;
+  will-change: background-position, transform, opacity, filter;
+  /* deslocamento mais irregular + drift da grade de pontos + pulso */
   animation:
-    cloudShiftAlt var(--alt-speed) ease-in-out infinite,
+    cloudShiftAlt calc(var(--alt-speed) * 1.02) cubic-bezier(.35,.25,.25,.95) infinite,
     dustDrift var(--dust-speed) linear infinite,
-    dustPulse 16s ease-in-out infinite;
+    dustPulse 16s ease-in-out infinite,
+    dustJitter 11s steps(4,end) infinite;
+  /* negative delays para já iniciarem "embaralhadas" */
+  animation-delay: -2.2s, -6s, -3.6s, -1s;
 }
 
-/* -----------------------------
-   Keyframes: movimento orgânico em X/Y + escala + opacidade (mix/unmix)
-   -----------------------------*/
-
+/* movimentos "principais" com paradas e saltos irregulares (X/Y) */
 @keyframes cloudShift {
-  0%   { background-position: 10% 20%, 0 0, 60% 40%; transform: scale(1); }
-  25%  { background-position: 35% 5%, 0 0, 40% 20%; transform: scale(1.03) translate(-2%,1%); }
-  50%  { background-position: 70% 40%, 0 0, 20% 60%; transform: scale(0.98) translate(3%,-2%); }
-  75%  { background-position: 40% 70%, 0 0, 65% 80%; transform: scale(1.02) translate(-1%,-1%); }
-  100% { background-position: 10% 20%, 0 0, 60% 40%; transform: scale(1); }
+  0%   { background-position: 10% 20%; transform: translate3d(0,0,0) scale(1); }
+  14%  { background-position: 36% 6%;  transform: translate3d(-2%,1%,0) scale(1.03); }
+  29%  { background-position: 72% 34%; transform: translate3d(3%,-2%,0) scale(0.98); }
+  41%  { background-position: 55% 60%; transform: translate3d(-1%,3%,0) scale(1.01); }
+  57%  { background-position: 20% 48%; transform: translate3d(2%,-1%,0) scale(0.99); }
+  76%  { background-position: 88% 22%; transform: translate3d(-3%,2%,0) scale(1.02); }
+  88%  { background-position: 48% 84%; transform: translate3d(1%,-3%,0) scale(0.975); }
+  100% { background-position: 10% 20%; transform: translate3d(0,0,0) scale(1); }
 }
 
 @keyframes cloudShiftAlt {
-  0%   { background-position: 75% 10%, 0 0, 20% 80%; transform: scale(1) rotate(0.01deg); }
-  30%  { background-position: 60% 35%, 0 0, 50% 40%; transform: scale(1.04) rotate(0.1deg); }
-  60%  { background-position: 20% 60%, 0 0, 80% 10%; transform: scale(0.96) rotate(-0.08deg); }
-  100% { background-position: 75% 10%, 0 0, 20% 80%; transform: scale(1) rotate(0.01deg); }
+  0%   { background-position: 75% 10%; transform: translate3d(0,0,0) scale(1) rotate(0.01deg); }
+  18%  { background-position: 58% 34%; transform: translate3d(-2%,2%,0) scale(1.04) rotate(0.08deg); }
+  33%  { background-position: 22% 62%; transform: translate3d(3%,-1%,0) scale(0.96) rotate(-0.06deg); }
+  49%  { background-position: 40% 20%; transform: translate3d(-1%,-2%,0) scale(1.02) rotate(0.03deg); }
+  67%  { background-position: 86% 48%; transform: translate3d(2%,3%,0) scale(0.97) rotate(-0.04deg); }
+  85%  { background-position: 12% 78%; transform: translate3d(-3%,-1%,0) scale(1.05) rotate(0.09deg); }
+  100% { background-position: 75% 10%; transform: translate3d(0,0,0) scale(1) rotate(0.01deg); }
 }
 
-/* Movimento contínuo das partículas (mudança grande da posição do padrão) */
+/* drift caótico do padrão de pontos (move grande em px + variação de percentual) */
 @keyframes dustDrift {
-  0%   { background-position: 25% 10%, 0 0, 50% 50%; }
-  50%  { background-position: 75% 80%, 800px 1200px, 10% 10%; } /* move o repeating pattern em px para "drift" */
-  100% { background-position: 25% 10%, 0 0, 50% 50%; }
+  0%   { background-position: 28% 12%, 0 0, 50% 50%; transform: translate3d(0,0,0); }
+  20%  { background-position: 62% 35%, 220px 900px, 30% 12%; transform: translate3d(-1%,0.6%,0); }
+  40%  { background-position: 15% 62%, 800px 1200px, 80% 18%; transform: translate3d(0.8%,-1.2%,0); }
+  60%  { background-position: 78% 22%, 420px 1100px, 10% 78%; transform: translate3d(-0.6%,0.9%,0); }
+  80%  { background-position: 45% 85%, 1200px 200px, 60% 40%; transform: translate3d(1%, -0.3%,0); }
+  100% { background-position: 28% 12%, 0 0, 50% 50%; transform: translate3d(0,0,0); }
 }
 
-/* Pulso de opacidade para simular "misturar / desmisturar" */
+/* pulso de opacidade para mixar / desmixar */
 @keyframes cloudPulse {
-  0%   { opacity: 0.86; }
-  40%  { opacity: 0.98; }
-  70%  { opacity: 0.88; }
-  100% { opacity: 0.86; }
+  0%   { opacity: 0.82; filter: blur(calc(var(--cloud-blur) + 8px)); }
+  40%  { opacity: 0.985; filter: blur(calc(var(--cloud-blur) - 18px)); }
+  70%  { opacity: 0.88; filter: blur(calc(var(--cloud-blur) + 2px)); }
+  100% { opacity: 0.82; filter: blur(calc(var(--cloud-blur) + 8px)); }
 }
 
 @keyframes dustPulse {
-  0%   { opacity: 0.82; filter: blur(30px) saturate(1); }
-  50%  { opacity: 0.95; filter: blur(18px) saturate(1.05); }
-  100% { opacity: 0.82; filter: blur(30px) saturate(1); }
+  0%   { opacity: 0.76; filter: blur(36px) saturate(0.98); }
+  45%  { opacity: 0.98; filter: blur(14px) saturate(1.06); }
+  100% { opacity: 0.76; filter: blur(36px) saturate(0.98); }
+}
+
+/* pequenas "tremulações" stepadas para quebrar fluidez previsível */
+@keyframes cloudJitter {
+  0%   { transform: translate3d(0,0,0) rotate(0deg); }
+  50%  { transform: translate3d(-0.6% ,0.9%,0) rotate(0.02deg); }
+  100% { transform: translate3d(0,0,0) rotate(0deg); }
+}
+@keyframes dustJitter {
+  0%   { transform: translate3d(0,0,0) rotate(0deg); }
+  25%  { transform: translate3d(0.8%,-0.8%,0) rotate(-0.03deg); }
+  50%  { transform: translate3d(-0.9%,0.6%,0) rotate(0.01deg); }
+  75%  { transform: translate3d(0.4%,-0.2%,0) rotate(-0.02deg); }
+  100% { transform: translate3d(0,0,0) rotate(0deg); }
 }
 
 /* Acessibilidade: respeita preferência de redução de movimento */
 @media (prefers-reduced-motion: reduce) {
-  body::before,
-  body::after {
+  .animated-gradient,
+  .animated-gradient::before,
+  .animated-gradient::after {
     animation: none !important;
     transition: none !important;
     filter: none !important;
   }
 }
-s
+
 
 /* Os outros gradientes permanecem como overlay, mas ajustaremos suas cores base */
 .gradient-overlay { background: rgba(0,0,0,0.46); }

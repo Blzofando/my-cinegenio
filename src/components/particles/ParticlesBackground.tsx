@@ -16,7 +16,7 @@ const ParticlesBackground = () => {
     fullScreen: { enable: false },
     particles: {
       number: {
-        value: 120, // Aumentamos a quantidade para parecer mais "poeira"
+        value: 300, // Aumentamos a quantidade para parecer mais "poeira"
         density: { enable: true, value_area: 800 },
       },
       color: { value: "#ffffff" },
@@ -53,7 +53,7 @@ const ParticlesBackground = () => {
   };
 
   return (
-    <div className="absolute inset-0 -z-20 pointer-events-none">
+    <div className="absolute">
       <Particles
         id="tsparticles"
         init={particlesInit}
