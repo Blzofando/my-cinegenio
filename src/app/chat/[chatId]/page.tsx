@@ -3,12 +3,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useContext, useTransition } from 'react';
-import { useRouter, useParams } from 'next/navigation'; // Importamos useParams
+import { useRouter, useParams } from 'next/navigation';
 import { getAdvancedAIChatResponse, getChatSession, saveChatSession, ChatMessage } from '@/lib/chatService';
 import RecommendationCard from '@/components/RecommendationCard';
 import DetailsModal from '@/components/shared/DetailsModal';
 import { WatchlistContext } from '@/contexts/WatchlistContext';
-import { DisplayableItem, WatchlistItem } from '@/types';
+import { DisplayableItem, WatchlistItem, Recommendation } from '@/types';
 import Image from 'next/image';
 
 const UserMessage = ({ text }: { text: string }) => (
@@ -38,16 +38,27 @@ const ItemsCarousel = ({ items, onItemClick }: { items: DisplayableItem[], onIte
     </div>
 );
 
-const ModelResponse = ({ response, onItemClick }: { response: any, onItemClick: (item: DisplayableItem) => void }) => {
+// Definimos o tipo de resposta que o ModelResponse espera para remover o 'any'
+type AIResponseData = {
+    type: 'text' | 'recommendation' | 'list';
+    data: {
+        text?: string;
+        recommendation?: Recommendation;
+        list?: DisplayableItem[];
+    };
+};
+
+const ModelResponse = ({ response, onItemClick }: { response: AIResponseData, onItemClick: (item: DisplayableItem) => void }) => {
     switch (response.type) {
         case 'recommendation':
-            return <RecommendationCard recommendation={response.data.recommendation} />;
+            // Adicionamos '!' para garantir ao TypeScript que a recomendação existe neste caso
+            return <RecommendationCard recommendation={response.data.recommendation!} />;
         case 'list':
             return (
                 <div className="flex justify-start w-full">
                     <div className="bg-gray-700 text-white rounded-lg rounded-bl-none p-4 max-w-full w-full">
                         {response.data.text && <p className="mb-3">{response.data.text}</p>}
-                        <ItemsCarousel items={response.data.list} onItemClick={onItemClick} />
+                        <ItemsCarousel items={response.data.list || []} onItemClick={onItemClick} />
                     </div>
                 </div>
             );
@@ -83,11 +94,10 @@ const examplePlaceholders = [
     "Qual o desafio desta semana?",
 ];
 
-// A função do componente agora não recebe mais 'params'
 export default function ChatConversationPage() {
     const router = useRouter();
-    const params = useParams(); // Usamos o hook para pegar os parâmetros da URL
-    const chatId = params.chatId as string; // Pegamos o chatId a partir daqui
+    const params = useParams();
+    const chatId = params.chatId as string;
 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [currentSessionId, setCurrentSessionId] = useState<string | null>(chatId === 'new' ? null : chatId);
@@ -181,7 +191,7 @@ export default function ChatConversationPage() {
                 const newSessionId = await saveChatSession(currentSessionId, finalMessages);
                 if (!currentSessionId || currentSessionId === 'new') {
                     setCurrentSessionId(newSessionId);
-                    router.replace(`/chat/${newSessionId}`, { scroll: false });
+router.replace(`/chat/${newSessionId}`, { scroll: false });
                 }
             });
         } catch (error) {

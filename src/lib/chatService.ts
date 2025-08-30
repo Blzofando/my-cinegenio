@@ -2,10 +2,10 @@
 
 "use server";
 
-import { doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { getWatchedItems, getWatchlistItems, getTMDbRadarCache, getRelevantReleases } from './firestore';
-import { AllManagedWatchedData, Challenge, WatchlistItem, WeeklyRelevants } from '@/types';
+import { AllManagedWatchedData, Challenge, WatchlistItem, WeeklyRelevants, Recommendation, DisplayableItem } from '@/types';
 import { runJsonMode, formatWatchedDataForPrompt } from './gemini';
 import { getTMDbDetails, searchByTitleAndYear } from './tmdb';
 import type { FunctionDeclarationSchema } from "@google/generative-ai";
@@ -19,7 +19,7 @@ export type ChatMessage = {
 export type ChatSession = {
     id: string;
     title: string;
-    createdAt: any; // Usamos 'any' para compatibilidade com o serverTimestamp
+    createdAt: Timestamp;
     messages: ChatMessage[];
 }
 
@@ -65,6 +65,19 @@ const chatTitleSchema: FunctionDeclarationSchema = {
     required: ["title"]
 };
 
+// Tipo para a resposta crua da IA, que inclui campos que não estão no tipo Recommendation final
+type AIRawRecommendation = Recommendation & { year: number; media_type: 'movie' | 'tv' };
+
+// Tipo final da resposta estruturada da IA
+type AIResponse = { 
+    type: 'text' | 'recommendation' | 'list', 
+    data: { 
+        text?: string; 
+        recommendation?: AIRawRecommendation; 
+        list?: DisplayableItem[] 
+    } 
+};
+
 export const getAdvancedAIChatResponse = async (
     currentMessage: string,
     history: ChatMessage[]
@@ -72,20 +85,19 @@ export const getAdvancedAIChatResponse = async (
     try {
         console.log("--- AÇÃO DO CHAT INICIADA ---");
         
-        // Coleta de Dados
         const [watchedItems, watchlistItems, tmdbRadarItems, relevantRadarItems] = await Promise.all([
             getWatchedItems(),
             getWatchlistItems(),
             getTMDbRadarCache(),
             getRelevantReleases()
         ]);
+
         const watchedData: AllManagedWatchedData = watchedItems.reduce((acc, item) => {
             const rating = item.rating || 'meh';
             acc[rating].push(item);
             return acc;
         }, { amei: [], gostei: [], meh: [], naoGostei: [] } as AllManagedWatchedData);
 
-        
         const now = new Date();
         const weekId = `${now.getFullYear()}-${Math.ceil((((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7)}`;
         const challengeSnap = await getDoc(doc(db, 'challenges', weekId));
@@ -99,18 +111,13 @@ export const getAdvancedAIChatResponse = async (
         const relevantsText = weeklyRelevants?.categories.map(cat => `Categoria "${cat.categoryTitle}":\n` + cat.items.map(i => `- ${i.title} (ID: ${i.id})`).join('\n')).join('\n\n') || 'Nenhuma lista de relevantes encontrada';
         const tmdbRadarText = tmdbRadarItems.map(item => `- ${item.title} (${item.listType})`).join('\n') || 'Nenhum item no radar geral.';
         const relevantRadarText = relevantRadarItems.map(item => `- ${item.title} (Motivo: ${item.reason})`).join('\n') || 'Nenhum item no radar personalizado.';
-
-        // Prompt com instruções mais rígidas
-        // DENTRO da função getAdvancedAIChatResponse, no arquivo src/lib/chatService.ts
-
+        
         const prompt = `
-            Você é o CineGênio, um assistente especialista em cinema.
+            Você é o CineGênio, um assistente especialista.
             Analise o contexto e o histórico para responder à última mensagem do usuário.
-            Sempre retorne no formato JSON definido. Decida o 'type' da resposta ('text', 'recommendation', 'list') com base na intenção do usuário.
-
+            Sempre retorne no formato JSON definido. Decida o 'type' da resposta ('text', 'recommendation', 'list') com base na intenção.
             **REGRA CRÍTICA:** Se o usuário pedir para listar itens de uma seção específica (ex: "quais os filmes do desafio?"), sua resposta DEVE ser do tipo 'list' e o campo 'data.list' DEVE conter os itens EXATOS daquela seção, usando os IDs fornecidos no contexto. NÃO invente itens.
-            
-            **REGRA DE DUELO:** Se a mensagem do usuário for uma comparação ou duelo entre dois ou mais títulos (ex: "qual desses eu vou gostar mais?", "Velozes e Furiosos ou Titanic?"), analise qual o usuário provavelmente preferiria e retorne sua resposta como type: 'recommendation', focando a análise e o 'title' no título vencedor.
+            **REGRA DE DUELO:** Se a mensagem do usuário for uma comparação ou duelo entre dois ou mais títulos, retorne sua resposta como type: 'recommendation', focando a análise e o 'title' no título vencedor.
 
             ### CONTEXTO DO USUÁRIO ###
             # PERFIL DE GOSTO:
@@ -133,13 +140,11 @@ export const getAdvancedAIChatResponse = async (
             user: ${currentMessage}
         `;
 
-        const aiResponse = await runJsonMode(prompt, chatResponseSchema) as { type: 'text' | 'recommendation' | 'list', data: { text?: string; recommendation?: any; list?: any[] } };
+        const aiResponse = await runJsonMode(prompt, chatResponseSchema) as AIResponse;
         
         console.log("RAW AI Response:", JSON.stringify(aiResponse, null, 2));
 
-        // Validação e Enriquecimento para RECOMENDAÇÃO ÚNICA
         if (aiResponse.type === 'recommendation' && aiResponse.data.recommendation) {
-            console.log("Enriquecendo a recomendação com dados do TMDb...");
             const rec = aiResponse.data.recommendation;
             const tmdbResult = await searchByTitleAndYear(rec.title, rec.year, rec.media_type);
             if (tmdbResult) {
@@ -147,23 +152,15 @@ export const getAdvancedAIChatResponse = async (
                 aiResponse.data.recommendation.posterUrl = tmdbResult.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbResult.poster_path}` : undefined;
             }
         }
-
-        // NOVA VALIDAÇÃO E ENRIQUECIMENTO PARA LISTAS
+        
         if (aiResponse.type === 'list' && aiResponse.data.list) {
-            console.log("Enriquecendo a lista com dados do TMDb...");
             const enrichedList = await Promise.all(
-                aiResponse.data.list.map(async (item: any) => {
-                    if (!item.id || !item.tmdbMediaType) return item; // Retorna o item como está se faltar dados
+                aiResponse.data.list.map(async (item) => {
+                    if (!item.id || !item.tmdbMediaType) return item;
                     try {
                         const details = await getTMDbDetails(item.id, item.tmdbMediaType);
-                        return {
-                            ...item,
-                            title: details.title || details.name,
-                            posterUrl: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : undefined,
-                        };
-                    } catch {
-                        return item; // Se a busca falhar, retorna o item original
-                    }
+                        return { ...item, title: details.title || details.name, posterUrl: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : undefined, };
+                    } catch { return item; }
                 })
             );
             aiResponse.data.list = enrichedList;
@@ -178,7 +175,7 @@ export const getAdvancedAIChatResponse = async (
     }
 };
 
-// --- NOVAS FUNÇÕES DE HISTÓRICO ---
+// --- FUNÇÕES DE HISTÓRICO ---
 const CHAT_HISTORY_COLLECTION = 'chatHistories';
 
 export const listChatSessions = async (): Promise<{ id: string; title: string; }[]> => {
@@ -233,11 +230,7 @@ export const saveChatSession = async (sessionId: string | null, messages: ChatMe
         throw new Error("Não foi possível salvar a conversa.");
     }
 };
-// Adicionar esta função em src/lib/chatService.ts
 
-/**
- * Apaga uma sessão de chat do Firestore.
- */
 export const deleteChatSession = async (sessionId: string): Promise<void> => {
     try {
         console.log(`SERVER ACTION: Apagando a sessão de chat: ${sessionId}`);
