@@ -1,58 +1,66 @@
 // src/components/particles/ParticlesBackground.tsx
+
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useCallback } from "react";
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
+import type { Engine } from "tsparticles-engine";
 
-const particlesOptions = {
-  fullScreen: { enable: false },
-  particles: {
-    number: { value: 60, density: { enable: true, area: 1500 } },
-    color: { value: "#ffffff" },
-    opacity: {
-      value: 0.05,
-      random: { enable: true, minimumValue: 0.02 },
-      anim: { enable: true, speed: 0.08, opacity_min: 0.02, sync: false }
-    },
-    size: { value: 1.2, random: { enable: true, minimumValue: 0.5 } },
-    move: {
-      enable: true,
-      speed: 1.6,   // aumenta a velocidade (estava 0.5 ou 1 provavelmente)
-      direction: "none", 
-      random: true,
-      straight: false, // não se mover em linha reta
-      outModes: {
-        default: "out",
-      },
-      trail: {
-        enable: false,
-      },
-    },
-    attract: {
-      enable: true,
-      rotateX: 600,
-      rotateY: 1200,
-    },
-    warp: true,
-    shape: { type: "circle" },
-    twinkle: { particles: { enable: true, frequency: 0.008, opacity: 0.8 } }
-  },
-  interactivity: { detectsOn: "canvas", events: { onHover: { enable: false }, onClick: { enable: false } } },
-  background: { color: "transparent" },
-  retina_detect: true
-};
-
-export default function ParticlesBackground({ className = "" }: { className?: string }) {
-  const particlesInit = useCallback(async (engine: any) => {
-    // loadFull precisa do engine; usamos `any` aqui por compatibilidade entre versões do pacote
+const ParticlesBackground = () => {
+  const particlesInit = useCallback(async (engine: Engine) => {
     await loadFull(engine);
   }, []);
 
+  const particlesOptions = {
+    fullScreen: { enable: false },
+    particles: {
+      number: {
+        value: 120, // Aumentamos a quantidade para parecer mais "poeira"
+        density: { enable: true, value_area: 800 },
+      },
+      color: { value: "#ffffff" },
+      shape: { type: "circle" },
+      opacity: {
+        value: 0.5,
+        random: true, // Opacidade aleatória para dar profundidade
+        anim: { enable: true, speed: 0.2, opacity_min: 0.1, sync: false },
+      },
+      size: {
+        value: 1, // Partículas bem menores
+        random: true,
+        minimumValue: 0.5,
+      },
+      move: {
+        enable: true,
+        speed: 0.5, // Movimento lento mas perceptível
+        direction: "none" as const,
+        random: true, // Movimento totalmente aleatório
+        straight: false,
+        out_mode: "out" as const,
+        bounce: false,
+      },
+    },
+    interactivity: {
+      detectsOn: "canvas" as const,
+      events: {
+        onHover: { enable: false },
+        onClick: { enable: false },
+        resize: true,
+      },
+    },
+    detectRetina: true,
+  };
+
   return (
-    <div className={`absolute inset-0 -z-20 pointer-events-none ${className}`}>
-      <Particles init={particlesInit as any} options={particlesOptions as any} />
+    <div className="absolute inset-0 -z-20 pointer-events-none">
+      <Particles
+        id="tsparticles"
+        init={particlesInit}
+        options={particlesOptions}
+      />
     </div>
   );
-}
+};
+
+export default ParticlesBackground;
