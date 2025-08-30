@@ -391,6 +391,7 @@ html, body {
     padding: 0;
     overflow-x: hidden;
     overscroll-behavior-y: contain;
+    background-color: #000; /* Garante que não haja branco */
 }
 
 /* responsividade desktop */
