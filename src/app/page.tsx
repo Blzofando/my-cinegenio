@@ -1,5 +1,3 @@
-// src/app/page.tsx
-
 "use client";
 
 import React, { useState } from "react";
@@ -25,54 +23,73 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen w-full text-white relative overflow-hidden bg-radial main-with-fixed-header">
+    <main className="min-h-screen w-full text-white relative overflow-hidden">
       <div className="fixed inset-0 -z-30" aria-hidden>
         <div className="animated-gradient absolute inset-0" />
         <div className="absolute inset-0 gradient-overlay" />
       </div>
       {SHOW_PARTICLES && <ParticlesBackground />}
-      
+
       {/* DESKTOP LAYOUT */}
       <div className="hidden lg:flex flex-col h-screen p-8">
-        <header className="w-full flex justify-between items-center mb-8 flex-shrink-0">
-          <div className="flex items-center gap-4 flex-wrap">
-            <LevelBadge level={7} />
-            <StatPill icon="🔥" text="10 desafios" />
-            <StatPill icon="🎬" text="250 títulos" />
-          </div>
-          <nav className="flex items-center gap-6">
-            <FooterButton icon="📚" text="Minha Coleção" href="/collection" />
-            <FooterButton icon="📋" text="Watchlist" href="/watchlist" />
-            <FooterButton icon="📊" text="Meus Insights" href="/stats" />
-          </nav>
-        </header>
-        <div className="flex-grow grid grid-cols-2 gap-8 items-center -mt-8">
-          <div className="grid grid-cols-2 gap-6">
-            <FeatureCard className="feature-card" icon="💡" title="Sugestão Personalizada" href="/suggestion" />
-            <FeatureCard className="feature-card" icon="🎲" title="Sugestão Aleatória" href="/random" />
-            <FeatureCard className="feature-card" icon="📡" title="Radar de Lançamentos" href="/radar" />
-            {/* CORREÇÃO AQUI: o onClick é passado diretamente para o componente */}
-            <FeatureCard className="feature-card" icon="🏆" title="Desafio do Gênio" href="/challenge" onClick={triggerAchievement} />
-            <FeatureCard className="feature-card" icon="⚔️" title="Duelo de Títulos" href="/duel" />
-            <FeatureCard className="feature-card" icon="🗓️" title="Relevantes da Semana" href="/weekly-relevants" />
-          </div>
-          <div className="relative flex flex-col items-center justify-center h-full">
-            <Logo className="text-8xl" />
-            <div className="absolute flex items-center justify-center gap-4 opacity-60 -z-20">
-              <Image src="/rolo-neon.png" alt="Rolo de filme" width={260} height={260} className="img-glow translate-x-10" />
-              <Image src="/claquete-neon.png" alt="Claquete" width={220} height={220} className="img-glow -translate-x-10" />
+        <div className="flex-grow grid grid-cols-2 gap-12">
+          {/* Coluna Esquerda */}
+          <div className="flex flex-col items-center justify-center h-full">
+            <Logo className="hero-title" subtext="Seu assistente de cinema e séries." />
+            <div className="mt-8">
+              <Image 
+                src="/rolo-neon.png" 
+                alt="Rolo de filme" 
+                width={200} 
+                height={200} 
+                className="img-glow hero-decor" 
+                priority 
+              />
             </div>
-            <div className="mt-8 w-3/4">
-              <Link href="/chat" className="cta-wide">
-                <span style={{ fontSize: 22 }}>💬</span>
-                <span style={{ fontSize: 18 }}>Fale com o Gênio</span>
-              </Link>
+          </div>
+
+          {/* Coluna Direita */}
+          <div className="flex flex-col h-full justify-between">
+            {/* Badges */}
+            <div className="flex items-center gap-4 flex-wrap w-full max-w-xl mx-auto justify-center">
+              <LevelBadge level={7} />
+              <StatPill icon="🔥" text="10 desafios" />
+              <StatPill icon="🎬" text="250 títulos" />
             </div>
+
+            {/* Ações centralizadas */}
+            <div className="flex flex-col justify-center flex-grow">
+              <div className="grid grid-cols-3 gap-4 w-full max-w-xl mx-auto">
+                <FeatureCard icon="💡" title="Sugestão Personalizada" href="/suggestion" />
+                <FeatureCard icon="🎲" title="Sugestão Aleatória" href="/random" />
+                <FeatureCard icon="📡" title="Radar" href="/radar" />
+                <div onClick={triggerAchievement}>
+                  <FeatureCard icon="🏆" title="Desafio" href="/challenge" />
+                </div>
+                <FeatureCard icon="⚔️" title="Duelo" href="/duel" />
+                <FeatureCard icon="🗓️" title="Relevantes" href="/weekly-relevants" />
+              </div>
+
+              {/* CTA abaixo da grade */}
+              <div className="w-full max-w-xl mx-auto mt-8">
+                <Link href="/chat" className="cta-centered">
+                  <span style={{ fontSize: 20 }}>💬</span>
+                  <span style={{ marginLeft: 10, fontWeight: 800 }}>Fale com o Gênio</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Links no rodapé da coluna */}
+            <nav className="flex items-center gap-8 w-full max-w-xl mx-auto justify-center mt-4">
+              <FooterButton icon="📚" text="Minha Coleção" href="/collection" />
+              <FooterButton icon="📋" text="Watchlist" href="/watchlist" />
+              <FooterButton icon="📊" text="Meus Insights" href="/stats" />
+            </nav>
           </div>
         </div>
       </div>
 
-      {/* MOBILE LAYOUT */}
+      {/* MOBILE LAYOUT (inalterado) */}
       <div className="lg:hidden">
         <div className="app-header" />
         <Hero />
@@ -86,20 +103,19 @@ export default function HomePage() {
           <div className="content-spacer" />
           <section className="mb-6" aria-label="Funções principais">
             <div className="feature-grid">
-              <FeatureCard className="feature-card" icon="💡" title="Sugestão Personalizada" href="/suggestion" />
-              <FeatureCard className="feature-card" icon="🎲" title="Sugestão Aleatória" href="/random" />
-              <FeatureCard className="feature-card" icon="📡" title="Radar de Lançamentos" href="/radar" />
-              {/* CORREÇÃO AQUI: o onClick é passado diretamente para o componente */}
-              <FeatureCard className="feature-card" icon="🏆" title="Desafio do Gênio" href="/challenge" onClick={triggerAchievement} />
-              <FeatureCard className="feature-card" icon="⚔️" title="Duelo de Títulos" href="/duel" />
-              <FeatureCard className="feature-card" icon="🗓️" title="Relevantes da Semana" href="/weekly-relevants" />
+              <FeatureCard icon="💡" title="Sugestão Personalizada" href="/suggestion" />
+              <FeatureCard icon="🎲" title="Sugestão Aleatória" href="/random" />
+              <FeatureCard icon="📡" title="Radar de Lançamentos" href="/radar" />
+              <FeatureCard icon="🏆" title="Desafio do Gênio" href="/challenge" onClick={triggerAchievement} />
+              <FeatureCard icon="⚔️" title="Duelo de Títulos" href="/duel" />
+              <FeatureCard icon="🗓️" title="Relevantes da Semana" href="/weekly-relevants" />
             </div>
           </section>
           <div style={{ height: "20px" }} />
         </div>
       </div>
 
-      {/* FOOTER */}
+      {/* Footer Fixo Mobile */}
       <footer className="footer-fixed lg:hidden" aria-hidden>
         <div className="max-w-3xl mx-auto px-4">
           <div className="flex justify-around items-center h-16">
@@ -110,7 +126,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* FEEDBACK */}
+      {/* Feedback */}
       <AchievementToast visible={achievement} message="🏆 Desafio iniciado! Boa sorte, Gênio." />
       <ConfettiOnComplete active={achievement} />
     </main>
