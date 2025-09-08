@@ -1,5 +1,3 @@
-// src/components/particles/ParticlesBackground.tsx
-
 "use client";
 
 import React, { useCallback } from "react";
@@ -13,29 +11,29 @@ const ParticlesBackground = () => {
   }, []);
 
   const particlesOptions = {
-    fullScreen: { enable: false },
+    fullScreen: { enable: false }, // Mantemos false para respeitar o container
     particles: {
       number: {
-        value: 300, // Aumentamos a quantidade para parecer mais "poeira"
+        value: 300,
         density: { enable: true, value_area: 800 },
       },
       color: { value: "#ffffff" },
       shape: { type: "circle" },
       opacity: {
         value: 0.5,
-        random: true, // Opacidade aleatória para dar profundidade
+        random: true,
         anim: { enable: true, speed: 0.2, opacity_min: 0.1, sync: false },
       },
       size: {
-        value: 1, // Partículas bem menores
+        value: 1,
         random: true,
         minimumValue: 0.5,
       },
       move: {
         enable: true,
-        speed: 0.5, // Movimento lento mas perceptível
+        speed: 0.5,
         direction: "none" as const,
-        random: true, // Movimento totalmente aleatório
+        random: true,
         straight: false,
         out_mode: "out" as const,
         bounce: false,
@@ -43,22 +41,14 @@ const ParticlesBackground = () => {
     },
     interactivity: {
       detectsOn: "canvas" as const,
-      events: {
-        onHover: { enable: false },
-        onClick: { enable: false },
-        resize: true,
-      },
+      events: { resize: true },
     },
     detectRetina: true,
   };
 
   return (
-    <div className="absolute">
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        options={particlesOptions}
-      />
+    <div className="absolute inset-0 w-full h-full">
+      <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
     </div>
   );
 };
