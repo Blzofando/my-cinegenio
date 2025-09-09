@@ -2,7 +2,7 @@
 
 import OpenAI from 'openai';
 import { AI_MODELS } from '@/config/ai';
-import { AllManagedWatchedData, Recommendation, DuelResult, Challenge, ChallengeStep } from '@/types';
+import { AllManagedWatchedData, Recommendation, DuelResult, Challenge, ChallengeStep, ManagedWatchedItem } from '@/types';
 
 // Tipos para compatibilidade
 type WeeklyRelevantsAIResponse = { categories: { categoryTitle: string; items: { title: string; year: number; media_type: 'movie' | 'tv'; reason: string; }[] }[] };
@@ -45,7 +45,7 @@ async function runJsonMode<T>(systemPrompt: string, userPrompt: string, modelNam
 // --- LÓGICA DO SERVIÇO ---
 // A formatação é independente da IA, então a replicamos aqui para manter a interface consistente.
 export const formatWatchedDataForPrompt = async (data: AllManagedWatchedData): Promise<string> => {
-    const formatList = (list: any[]) => list.map(item => `- ${item.title} (Tipo: ${item.type}, Gênero: ${item.genre})`).join('\n') || 'Nenhum';
+    const formatList = (list: ManagedWatchedItem[]) => list.map(item => `- ${item.title} (Tipo: ${item.type}, Gênero: ${item.genre})`).join('\n') || 'Nenhum';
     return `
 **Amei (obras que considero perfeitas, alvo principal para inspiração):**
 ${formatList(data.amei)}
