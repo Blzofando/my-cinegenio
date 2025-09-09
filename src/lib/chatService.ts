@@ -4,12 +4,11 @@
 import { doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { getWatchedItems, getWatchlistItems, getTMDbRadarCache, getRelevantReleases } from './firestore';
-import { AllManagedWatchedData, Challenge, WatchlistItem, WeeklyRelevants, Recommendation, DisplayableItem } from '@/types';
+import { AllManagedWatchedData, Challenge, WeeklyRelevants } from '@/types';
 // ALTERAÇÃO: Importando do nosso novo serviço de IA unificado
 import { formatWatchedDataForPrompt, generateAdvancedChatResponse, generateChatTitle } from './aiService';
 import { getTMDbDetails, searchByTitleAndYear } from './tmdb';
 // Importa o tipo da resposta de um dos serviços para manter a consistência
-import type { AIChatResponse } from './gemini';
 
 export type ChatMessage = {
     role: 'user' | 'model';

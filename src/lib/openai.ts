@@ -1,9 +1,8 @@
-// src/lib/openai.ts
 "use server";
 
 import OpenAI from 'openai';
 import { AI_MODELS } from '@/config/ai';
-import { AllManagedWatchedData, Recommendation, DuelResult, Challenge } from '@/types';
+import { AllManagedWatchedData, Recommendation, DuelResult, Challenge, ChallengeStep } from '@/types';
 
 // Tipos para compatibilidade
 type WeeklyRelevantsAIResponse = { categories: { categoryTitle: string; items: { title: string; year: number; media_type: 'movie' | 'tv'; reason: string; }[] }[] };
@@ -37,8 +36,8 @@ async function runJsonMode<T>(systemPrompt: string, userPrompt: string, modelNam
     }
     try {
         return JSON.parse(jsonString) as T;
-    } catch (error) {
-        console.error("Erro ao fazer parse da resposta JSON da OpenAI:", jsonString);
+    } catch (e) {
+        console.error("Erro ao fazer parse da resposta JSON da OpenAI:", jsonString, e);
         throw new Error("A IA (OpenAI) retornou um JSON malformado.");
     }
 }
@@ -70,42 +69,50 @@ export const fetchRecommendation = async (prompt: string): Promise<Omit<Recommen
 export const fetchDuelAnalysis = async (prompt: string): Promise<DuelResult> => {
     if (!API_KEY) return { title1: { title: "Mock 1 OpenAI", analysis: "Análise 1", probability: 80, posterUrl: "" }, title2: { title: "Mock 2 OpenAI", analysis: "Análise 2", probability: 70, posterUrl: "" }, verdict: "Veredito Mock OpenAI" };
     const systemPrompt = "Você é um crítico de cinema. Analise um duelo entre dois títulos. Responda APENAS com um objeto JSON válido com a estrutura: { title1: { title: string, analysis: string, probability: number }, title2: { title: string, analysis: string, probability: number }, verdict: string }";
-    const modelName = AI_MODELS.openai.duel;
+    const modelName = AI_MODELS.openai.recommendation;
     return runJsonMode<DuelResult>(systemPrompt, prompt, modelName);
 };
 
 export const fetchWeeklyRelevants = async (prompt: string): Promise<WeeklyRelevantsAIResponse> => {
     if (!API_KEY) return { categories: [] };
     const systemPrompt = "Você é um curador de conteúdo. Gere categorias de itens relevantes. Responda APENAS com um objeto JSON válido com a estrutura: { categories: [{ categoryTitle: string, items: [{ title: string, year: number, media_type: 'movie' | 'tv', reason: string }] }] }";
-    const modelName = AI_MODELS.openai.weeklyRelevants;
+    const modelName = AI_MODELS.openai.recommendation;
     return runJsonMode<WeeklyRelevantsAIResponse>(systemPrompt, prompt, modelName);
 };
 
 export const fetchPersonalizedRadar = async (prompt: string): Promise<PersonalizedRadarAIResponse> => {
     if (!API_KEY) return { releases: [] };
     const systemPrompt = "Você é um recomendador de conteúdo. Gere uma lista de lançamentos futuros. Responda APENAS com um objeto JSON válido com a estrutura: { releases: [{ id: number, tmdbMediaType: 'movie' | 'tv', title: string, reason: string }] }";
-    const modelName = AI_MODELS.openai.personalizedRadar;
+    const modelName = AI_MODELS.openai.recommendation;
     return runJsonMode<PersonalizedRadarAIResponse>(systemPrompt, prompt, modelName);
 };
 
 export const fetchLoveProbability = async (prompt: string): Promise<number> => {
     if (!API_KEY) return Math.floor(Math.random() * 31) + 70;
     const systemPrompt = "Analise o título e o perfil do usuário para calcular a probabilidade de ele AMAR o título. A probabilidade deve ser um número inteiro entre 0 e 100. Responda APENAS com um objeto JSON válido com a estrutura: { loveProbability: number }";
-    const modelName = AI_MODELS.openai.probability;
+    const modelName = AI_MODELS.openai.recommendation;
     const result = await runJsonMode<{ loveProbability: number }>(systemPrompt, prompt, modelName);
     return result.loveProbability;
 };
 
 export const fetchWeeklyChallenge = async (prompt: string): Promise<Omit<Challenge, 'id' | 'status'>> => {
-    if (!API_KEY) return { challengeType: "Maratona Clássicos do Terror (OpenAI)", reason: "Mock OpenAI", steps: [] };
+    if (!API_KEY) return { 
+        challengeType: "Maratona Clássicos do Terror (OpenAI)", 
+        reason: "Mock OpenAI", 
+        steps: [
+            { title: "O Exorcista (1973)", tmdbId: 9552, tmdbMediaType: 'movie', completed: false, posterUrl: "" },
+            { title: "O Iluminado (1980)", tmdbId: 694, tmdbMediaType: 'movie', completed: false, posterUrl: "" },
+            { title: "Psicose (1960)", tmdbId: 539, tmdbMediaType: 'movie', completed: false, posterUrl: "" },
+        ] as ChallengeStep[]
+    };
     const systemPrompt = "Você é um criador de desafios. Gere um desafio semanal. Responda APENAS com um objeto JSON válido com a estrutura: { challengeType: string, reason: string, steps: [{ title: string, tmdbId: number, tmdbMediaType: 'movie' | 'tv' }] }";
-    const modelName = AI_MODELS.openai.challenge;
+    const modelName = AI_MODELS.openai.recommendation;
     return runJsonMode<Omit<Challenge, 'id' | 'status'>>(systemPrompt, prompt, modelName);
 };
 
 export const fetchBestTMDbMatch = async (prompt: string): Promise<number | null> => {
     if (!API_KEY) return null;
-    const modelName = AI_MODELS.openai.tmdbMatch;
+    const modelName = AI_MODELS.openai.chat;
     const response = await openai.chat.completions.create({
         model: modelName,
         messages: [
@@ -137,3 +144,4 @@ export const generateChatTitle = async (prompt: string): Promise<{ title: string
 
     return runJsonMode<{ title: string }>(systemPrompt, prompt, modelName);
 };
+

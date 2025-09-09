@@ -105,7 +105,7 @@ export default function ChatConversationPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [placeholder, setPlaceholder] = useState('');
     const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
-    const [isSaving, startSavingTransition] = useTransition();
+    const [, startSavingTransition] = useTransition();
     const [selectedItem, setSelectedItem] = useState<DisplayableItem | null>(null);
     const { addToWatchlist, isInWatchlist } = useContext(WatchlistContext);
 
