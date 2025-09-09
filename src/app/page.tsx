@@ -24,11 +24,19 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen w-full text-white relative overflow-hidden">
-      <div className="fixed inset-0 -z-30" aria-hidden>
+      {/* --- ELEMENTOS DE FUNDO --- */}
+      {/* O gradiente é forçado para a camada mais baixa */}
+      <div className="fixed inset-0 -z-20" aria-hidden>
         <div className="animated-gradient absolute inset-0" />
         <div className="absolute inset-0 gradient-overlay" />
       </div>
-      {SHOW_PARTICLES && <ParticlesBackground />}
+      {/* CORREÇÃO: As partículas também são forçadas para uma camada de fundo */}
+      <div className="fixed inset-0 -z-10">
+        {SHOW_PARTICLES && <ParticlesBackground />}
+      </div>
+
+      {/* --- CONTEÚDO PRINCIPAL --- */}
+      {/* O conteúdo agora fica na camada padrão (z-0), que está acima do fundo */}
 
       {/* DESKTOP LAYOUT */}
       <div className="hidden lg:flex flex-col h-screen p-8">
