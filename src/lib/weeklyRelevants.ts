@@ -5,7 +5,7 @@
 import { db } from '@/lib/firebase/client';
 import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore"; // 'collection' foi removido daqui
 import { AllManagedWatchedData, WeeklyRelevants, WeeklyRelevantItem } from '@/types';
-import { formatWatchedDataForPrompt, fetchWeeklyRelevants } from './gemini';
+import { formatWatchedDataForPrompt, fetchWeeklyRelevants } from './aiService';
 import { getTMDbDetails, searchByTitleAndYear } from './tmdb';
 import { weeklyRelevantsCollection } from './firestore';
 

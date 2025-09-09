@@ -23,7 +23,7 @@ import {
     fetchDuelAnalysis, 
     fetchPersonalizedRadar, 
     fetchLoveProbability 
-} from './gemini';
+} from './aiService';
 
 
 // --- Funções de Orquestração ---

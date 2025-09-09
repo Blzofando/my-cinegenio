@@ -5,7 +5,7 @@
 import { db } from '@/lib/firebase/client'; // Usamos o client db para compatibilidade
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { AllManagedWatchedData, Challenge, ChallengeStep } from '@/types';
-import { fetchWeeklyChallenge, formatWatchedDataForPrompt } from './gemini'; 
+import { fetchWeeklyChallenge, formatWatchedDataForPrompt } from './aiService'; 
 import { getTMDbDetails } from './tmdb';
 
 /**

@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase/client';
 import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 import { AllManagedWatchedData, RelevantRadarItem, TMDbRadarItem, TMDbSearchResult } from '@/types';
 import { getNowPlayingMovies, getOnTheAirTV, getTopRatedOnProvider, getTrending, getUpcomingMovies } from './tmdb';
-import { fetchPersonalizedRadar, formatWatchedDataForPrompt } from './gemini';
+import { fetchPersonalizedRadar, formatWatchedDataForPrompt } from './aiService';
 import { setRelevantReleases, setTMDbRadarCache, getWatchedItems } from './firestore';
 
 // --- LÓGICA PARA O RADAR GERAL (TMDb) ---

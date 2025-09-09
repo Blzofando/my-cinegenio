@@ -1,15 +1,15 @@
 // src/lib/chatService.ts
-
 "use server";
 
 import { doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { getWatchedItems, getWatchlistItems, getTMDbRadarCache, getRelevantReleases } from './firestore';
 import { AllManagedWatchedData, Challenge, WatchlistItem, WeeklyRelevants, Recommendation, DisplayableItem } from '@/types';
-import { runJsonMode, formatWatchedDataForPrompt } from './gemini';
+// ALTERAÇÃO: Importando do nosso novo serviço de IA unificado
+import { formatWatchedDataForPrompt, generateAdvancedChatResponse, generateChatTitle } from './aiService';
 import { getTMDbDetails, searchByTitleAndYear } from './tmdb';
-import type { FunctionDeclarationSchema } from "@google/generative-ai";
-import { SchemaType } from "@google/generative-ai";
+// Importa o tipo da resposta de um dos serviços para manter a consistência
+import type { AIChatResponse } from './gemini';
 
 export type ChatMessage = {
     role: 'user' | 'model';
@@ -23,60 +23,7 @@ export type ChatSession = {
     messages: ChatMessage[];
 }
 
-const chatResponseSchema: FunctionDeclarationSchema = {
-    type: SchemaType.OBJECT,
-    properties: {
-        type: { type: SchemaType.STRING, enum: ['text', 'recommendation', 'list'], format: "enum" },
-        data: {
-            type: SchemaType.OBJECT,
-            properties: {
-                text: { type: SchemaType.STRING, description: "A resposta em texto, se for uma conversa." },
-                recommendation: {
-                    type: SchemaType.OBJECT,
-                    properties: {
-                        title: { type: SchemaType.STRING }, year: { type: SchemaType.INTEGER }, media_type: { type: SchemaType.STRING, enum: ['movie', 'tv'], format: "enum" },
-                        analysis: { type: SchemaType.STRING }, synopsis: { type: SchemaType.STRING }, genre: { type: SchemaType.STRING },
-                        type: { type: SchemaType.STRING, enum: ['Filme', 'Série', 'Anime', 'Programa'], format: "enum" },
-                        probabilities: { type: SchemaType.OBJECT, properties: {} }
-                    },
-                },
-                list: {
-                    type: SchemaType.ARRAY, description: "Uma lista de itens.",
-                    items: {
-                        type: SchemaType.OBJECT,
-                        properties: {
-                            id: { type: SchemaType.INTEGER },
-                            tmdbMediaType: { type: SchemaType.STRING, enum: ['movie', 'tv'], format: "enum" },
-                            title: { type: SchemaType.STRING },
-                        }
-                    }
-                }
-            },
-        },
-    },
-    required: ['type', 'data']
-};
-
-const chatTitleSchema: FunctionDeclarationSchema = {
-    type: SchemaType.OBJECT,
-    properties: {
-        title: { type: SchemaType.STRING, description: "Um título curto e conciso (máximo 5 palavras) para a conversa." }
-    },
-    required: ["title"]
-};
-
-// Tipo para a resposta crua da IA, que inclui campos que não estão no tipo Recommendation final
-type AIRawRecommendation = Recommendation & { year: number; media_type: 'movie' | 'tv' };
-
-// Tipo final da resposta estruturada da IA
-type AIResponse = { 
-    type: 'text' | 'recommendation' | 'list', 
-    data: { 
-        text?: string; 
-        recommendation?: AIRawRecommendation; 
-        list?: DisplayableItem[] 
-    } 
-};
+// OS SCHEMAS FORAM MOVIDOS PARA gemini.ts E NÃO SÃO MAIS NECESSÁRIOS AQUI
 
 export const getAdvancedAIChatResponse = async (
     currentMessage: string,
@@ -84,7 +31,8 @@ export const getAdvancedAIChatResponse = async (
 ) => {
     try {
         console.log("--- AÇÃO DO CHAT INICIADA ---");
-        
+
+        // Busca todos os dados de contexto em paralelo
         const [watchedItems, watchlistItems, tmdbRadarItems, relevantRadarItems] = await Promise.all([
             getWatchedItems(),
             getWatchlistItems(),
@@ -104,7 +52,8 @@ export const getAdvancedAIChatResponse = async (
         const challenge: Challenge | null = challengeSnap.exists() ? challengeSnap.data() as Challenge : null;
         const relevantsSnap = await getDoc(doc(db, 'weeklyRelevants', 'currentList'));
         const weeklyRelevants: WeeklyRelevants | null = relevantsSnap.exists() ? relevantsSnap.data() as WeeklyRelevants : null;
-    
+
+        // Formata o contexto para o prompt da IA
         const tasteProfile = await formatWatchedDataForPrompt(watchedData);
         const watchlistText = watchlistItems.map(item => `- ${item.title} (ID: ${item.id})`).join('\n') || 'Nenhuma';
         const challengeText = challenge ? `Desafio "${challenge.challengeType}": ${challenge.reason}\nItens do desafio:\n${challenge.steps.map(s => `- ${s.title} (ID: ${s.tmdbId})`).join('\n')}` : 'Nenhum desafio ativo';
@@ -140,10 +89,12 @@ export const getAdvancedAIChatResponse = async (
             user: ${currentMessage}
         `;
 
-        const aiResponse = await runJsonMode(prompt, chatResponseSchema) as AIResponse;
+        // ALTERAÇÃO: Usando a nova função do aiService
+        const aiResponse = await generateAdvancedChatResponse(prompt);
         
         console.log("RAW AI Response:", JSON.stringify(aiResponse, null, 2));
 
+        // Lógica de pós-processamento para enriquecer a resposta da IA com dados do TMDb
         if (aiResponse.type === 'recommendation' && aiResponse.data.recommendation) {
             const rec = aiResponse.data.recommendation;
             const tmdbResult = await searchByTitleAndYear(rec.title, rec.year, rec.media_type);
@@ -197,10 +148,7 @@ export const getChatSession = async (sessionId: string): Promise<ChatMessage[]> 
     try {
         const docRef = doc(db, CHAT_HISTORY_COLLECTION, sessionId);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            return docSnap.data().messages || [];
-        }
-        return [];
+        return docSnap.exists() ? (docSnap.data().messages || []) : [];
     } catch (error) {
         console.error("Erro ao buscar sessão de chat:", error);
         return [];
@@ -216,7 +164,8 @@ export const saveChatSession = async (sessionId: string | null, messages: ChatMe
         } else {
             const conversationText = messages.map(m => m.parts[0].text).slice(0, 4).join('\n');
             const prompt = `Gere um título curto e objetivo (máximo 5 palavras) para a seguinte conversa:\n\n---\n${conversationText}\n---`;
-            const titleResponse = await runJsonMode(prompt, chatTitleSchema) as { title: string };
+            // ALTERAÇÃO: Usando a nova função do aiService
+            const titleResponse = await generateChatTitle(prompt);
             
             const docRef = await addDoc(collection(db, CHAT_HISTORY_COLLECTION), {
                 title: titleResponse.title || "Novo Chat",
