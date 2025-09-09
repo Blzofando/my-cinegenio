@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useContext, useState, useMemo, useEffect } from 'react'; // Adicionado useEffect
-import { Recommendation, WatchlistItem, ManagedWatchedItem, DisplayableItem } from '@/types';
+import { Recommendation, WatchlistItem, ManagedWatchedItem } from '@/types';
 import { WatchedDataContext } from '@/contexts/WatchedDataContext';
 import { WatchlistContext } from '@/contexts/WatchlistContext';
 import Image from 'next/image';

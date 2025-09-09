@@ -3,13 +3,11 @@
 import { doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { getWatchedItems, getWatchlistItems, getTMDbRadarCache, getRelevantReleases } from './firestore';
-import { AllManagedWatchedData, Challenge, WeeklyRelevants } from '@/types';
+import { AllManagedWatchedData, Challenge, WeeklyRelevants, Recommendation } from '@/types';
 // Importa do nosso novo serviço de IA unificado
 import { formatWatchedDataForPrompt, generateAdvancedChatResponse, generateChatTitle } from './aiService';
 // Importa do tmdb para o enriquecimento dos dados
 import { getTMDbDetails, searchByTitleAndYear } from './tmdb';
-// CORREÇÃO: Re-adicionando o tipo de resposta para consistência
-import type { AIChatResponse } from './gemini';
 
 export type ChatMessage = {
     role: 'user' | 'model';
@@ -23,6 +21,12 @@ export type ChatSession = {
     messages: ChatMessage[];
 }
 
+// CORREÇÃO: Tipo intermediário para lidar com a inconsistência da IA de forma segura
+type AmbiguousRecommendation = Recommendation & {
+    media_type?: 'movie' | 'tv';
+};
+
+
 export const getAdvancedAIChatResponse = async (
     currentMessage: string,
     history: ChatMessage[]
@@ -30,35 +34,30 @@ export const getAdvancedAIChatResponse = async (
     try {
         console.log("--- AÇÃO DO CHAT INICIADA ---");
 
-        // Busca de todos os dados de contexto (inalterado)
+        // ... (toda a sua lógica de busca de contexto permanece a mesma)
         const [watchedItems, watchlistItems, tmdbRadarItems, relevantRadarItems] = await Promise.all([
             getWatchedItems(),
             getWatchlistItems(),
             getTMDbRadarCache(),
             getRelevantReleases()
         ]);
-
         const watchedData: AllManagedWatchedData = watchedItems.reduce((acc, item) => {
             const rating = item.rating || 'meh';
             acc[rating].push(item);
             return acc;
         }, { amei: [], gostei: [], meh: [], naoGostei: [] } as AllManagedWatchedData);
-
         const now = new Date();
         const weekId = `${now.getFullYear()}-${Math.ceil((((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7)}`;
         const challengeSnap = await getDoc(doc(db, 'challenges', weekId));
         const challenge: Challenge | null = challengeSnap.exists() ? challengeSnap.data() as Challenge : null;
         const relevantsSnap = await getDoc(doc(db, 'weeklyRelevants', 'currentList'));
         const weeklyRelevants: WeeklyRelevants | null = relevantsSnap.exists() ? relevantsSnap.data() as WeeklyRelevants : null;
-
-        // Formatação do contexto para o prompt (inalterado)
         const tasteProfile = await formatWatchedDataForPrompt(watchedData);
         const watchlistText = watchlistItems.map(item => `- ${item.title} (ID: ${item.id})`).join('\n') || 'Nenhuma';
         const challengeText = challenge ? `Desafio "${challenge.challengeType}": ${challenge.reason}\nItens do desafio:\n${challenge.steps.map(s => `- ${s.title} (ID: ${s.tmdbId})`).join('\n')}` : 'Nenhum desafio ativo';
         const relevantsText = weeklyRelevants?.categories.map(cat => `Categoria "${cat.categoryTitle}":\n` + cat.items.map(i => `- ${i.title} (ID: ${i.id})`).join('\n')).join('\n\n') || 'Nenhuma lista de relevantes encontrada';
         const tmdbRadarText = tmdbRadarItems.map(item => `- ${item.title} (${item.listType})`).join('\n') || 'Nenhum item no radar geral.';
         const relevantRadarText = relevantRadarItems.map(item => `- ${item.title} (Motivo: ${item.reason})`).join('\n') || 'Nenhum item no radar personalizado.';
-        
         const prompt = `
             Você é o CineGênio, um assistente especialista.
             Analise o contexto e o histórico para responder à última mensagem do usuário.
@@ -91,17 +90,16 @@ export const getAdvancedAIChatResponse = async (
         
         console.log("RAW AI Response:", JSON.stringify(aiResponse, null, 2));
 
-        // CORREÇÃO 1: Normalizar a resposta da IA para lidar com inconsistências de nome de campo
         if (aiResponse.type === 'recommendation' && aiResponse.data.recommendation) {
-            const rec = aiResponse.data.recommendation as any;
+            // CORREÇÃO: Usando o tipo AmbiguousRecommendation para evitar o 'any'
+            const rec: AmbiguousRecommendation = aiResponse.data.recommendation;
             if (rec.media_type && !rec.tmdbMediaType) {
                 console.log(`Normalizando 'media_type' para 'tmdbMediaType'. Valor: ${rec.media_type}`);
                 rec.tmdbMediaType = rec.media_type;
                 delete rec.media_type;
             }
         }
-
-        // CORREÇÃO 2: Lógica de enriquecimento agora usa o campo normalizado 'tmdbMediaType'
+        
         if (aiResponse.type === 'recommendation' && aiResponse.data.recommendation) {
             const rec = aiResponse.data.recommendation;
             
@@ -145,7 +143,7 @@ export const getAdvancedAIChatResponse = async (
     }
 };
 
-// --- FUNÇÕES DE HISTÓRICO (completas e inalteradas) ---
+// --- FUNÇÕES DE HISTÓRICO ---
 const CHAT_HISTORY_COLLECTION = 'chatHistories';
 
 export const listChatSessions = async (): Promise<{ id: string; title: string; }[]> => {
@@ -209,4 +207,3 @@ export const deleteChatSession = async (sessionId: string): Promise<void> => {
     }
 };
 
-// --- FIM DO ARQUIVO ---
