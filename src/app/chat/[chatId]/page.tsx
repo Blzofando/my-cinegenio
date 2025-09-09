@@ -1,5 +1,3 @@
-// src/app/chat/[chatId]/page.tsx
-
 "use client";
 
 import React, { useState, useRef, useEffect, useContext, useTransition } from 'react';
@@ -38,7 +36,6 @@ const ItemsCarousel = ({ items, onItemClick }: { items: DisplayableItem[], onIte
     </div>
 );
 
-// Definimos o tipo de resposta que o ModelResponse espera para remover o 'any'
 type AIResponseData = {
     type: 'text' | 'recommendation' | 'list';
     data: {
@@ -48,11 +45,29 @@ type AIResponseData = {
     };
 };
 
-const ModelResponse = ({ response, onItemClick }: { response: AIResponseData, onItemClick: (item: DisplayableItem) => void }) => {
+const ModelResponse = ({ 
+    response, 
+    onItemClick,
+    onAddToWatchlist,
+    isInWatchlist
+}: { 
+    response: AIResponseData, 
+    onItemClick: (item: DisplayableItem) => void,
+    onAddToWatchlist: (item: WatchlistItem) => void,
+    isInWatchlist: (id: number) => boolean
+}) => {
     switch (response.type) {
         case 'recommendation':
-            // Adicionamos '!' para garantir ao TypeScript que a recomendação existe neste caso
-            return <RecommendationCard recommendation={response.data.recommendation!} />;
+            const rec = response.data.recommendation;
+            if (!rec) return null;
+            
+            return (
+                <RecommendationCard
+                    recommendation={rec}
+                    onAddToWatchlist={onAddToWatchlist}
+                    isInWatchlist={isInWatchlist}
+                />
+            );
         case 'list':
             return (
                 <div className="flex justify-start w-full">
@@ -159,16 +174,24 @@ export default function ChatConversationPage() {
 
     const handleCarouselItemClick = (item: DisplayableItem) => setSelectedItem(item);
     
-    const handleAddToWatchlist = (item: DisplayableItem) => {
-        const watchlistItem: WatchlistItem = { id: item.id, tmdbMediaType: item.tmdbMediaType, title: item.title, posterUrl: item.posterUrl, addedAt: Date.now() };
-        addToWatchlist(watchlistItem);
-        setSelectedItem(null);
+    // CORREÇÃO: Adicionada verificação para garantir que o item tem um ID antes de salvar.
+    const handleAddToWatchlist = (item: WatchlistItem) => {
+        if (!item || typeof item.id === 'undefined') {
+            console.error("Tentativa de adicionar um item inválido (sem ID) à watchlist:", item);
+            // Opcional: Adicionar um toast de erro para o usuário aqui.
+            return;
+        }
+        addToWatchlist(item);
+        if (selectedItem) {
+            setSelectedItem(null);
+        }
     };
 
     const renderDetailsModalActions = () => {
         if (!selectedItem) return null;
         const isItemInWatchlist = isInWatchlist(selectedItem.id);
-        return ( <> <button onClick={() => handleAddToWatchlist(selectedItem)} disabled={isItemInWatchlist} className="w-full sm:w-auto flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg disabled:bg-gray-600 disabled:cursor-not-allowed">{isItemInWatchlist ? 'Já está na Watchlist' : 'Adicionar à Watchlist'}</button> <button onClick={() => setSelectedItem(null)} className="w-full sm:w-auto flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Fechar</button> </> );
+        const itemAsWatchlistItem: WatchlistItem = { ...selectedItem, addedAt: Date.now() };
+        return ( <> <button onClick={() => handleAddToWatchlist(itemAsWatchlistItem)} disabled={isItemInWatchlist} className="w-full sm:w-auto flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg disabled:bg-gray-600 disabled:cursor-not-allowed">{isItemInWatchlist ? 'Já está na Watchlist' : 'Adicionar à Watchlist'}</button> <button onClick={() => setSelectedItem(null)} className="w-full sm:w-auto flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Fechar</button> </> );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -191,7 +214,7 @@ export default function ChatConversationPage() {
                 const newSessionId = await saveChatSession(currentSessionId, finalMessages);
                 if (!currentSessionId || currentSessionId === 'new') {
                     setCurrentSessionId(newSessionId);
-router.replace(`/chat/${newSessionId}`, { scroll: false });
+                    router.replace(`/chat/${newSessionId}`, { scroll: false });
                 }
             });
         } catch (error) {
@@ -208,7 +231,19 @@ router.replace(`/chat/${newSessionId}`, { scroll: false });
             {selectedItem && ( <DetailsModal item={selectedItem} onClose={() => setSelectedItem(null)} actions={renderDetailsModalActions()} /> )}
             <div className="flex-grow overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 && !isLoading && <div className="text-center text-gray-500 pt-10">Comece enviando uma mensagem...</div>}
-                {messages.map((msg, index) => (msg.role === 'user' ? <UserMessage key={index} text={msg.parts[0].text} /> : <ModelResponse key={index} response={JSON.parse(msg.parts[0].text)} onItemClick={handleCarouselItemClick} />))}
+                
+                {messages.map((msg, index) => (
+                    msg.role === 'user' 
+                    ? <UserMessage key={index} text={msg.parts[0].text} /> 
+                    : <ModelResponse 
+                        key={index} 
+                        response={JSON.parse(msg.parts[0].text)} 
+                        onItemClick={handleCarouselItemClick}
+                        onAddToWatchlist={handleAddToWatchlist}
+                        isInWatchlist={isInWatchlist}
+                      />
+                ))}
+                
                 {isLoading && <LoadingIndicator />}
                 <div ref={endOfMessagesRef} />
             </div>
@@ -221,3 +256,4 @@ router.replace(`/chat/${newSessionId}`, { scroll: false });
         </div>
     );
 }
+

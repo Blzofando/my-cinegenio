@@ -1,5 +1,3 @@
-// src/lib/tmdb.ts
-
 import { WatchProviders, TMDbSearchResult, WatchProvider } from "@/types";
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -37,7 +35,8 @@ const addToQueue = <T>(requestFn: () => Promise<T>): Promise<T> => {
 
 const internalSearchByTitleAndYear = async (title: string, year: number, mediaType: 'movie' | 'tv'): Promise<TMDbSearchResult | null> => {
     const endpoint = mediaType === 'movie' ? 'movie' : 'tv';
-    const yearParam = mediaType === 'movie' ? 'primary_release_year' : 'first_air_date_year';
+    // CORREÇÃO: O parâmetro para buscar filmes por ano é 'year', e não 'primary_release_year'.
+    const yearParam = mediaType === 'movie' ? 'year' : 'first_air_date_year';
     const url = `${BASE_URL}/search/${endpoint}?query=${encodeURIComponent(title)}&${yearParam}=${year}&include_adult=false&language=pt-BR&page=1&api_key=${API_KEY}`;
 
     const response = await fetch(url);
@@ -194,3 +193,4 @@ export const getTopRatedOnProvider = (id: number) => {
 export const getTrending = () => {
     return addToQueue(() => internalGetTrending());
 };
+// --- FIM DO ARQUIVO ---

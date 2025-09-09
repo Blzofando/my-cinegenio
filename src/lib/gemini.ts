@@ -148,7 +148,7 @@ const challengeSchema: FunctionDeclarationSchema = {
 };
 
 
-// --- NOVOS SCHEMAS (Movidos do chatService.ts) ---
+// CORREÇÃO: O schema do chat agora pede 'tmdbMediaType' em vez de 'media_type'.
 const chatResponseSchema: FunctionDeclarationSchema = {
     type: SchemaType.OBJECT,
     properties: {
@@ -160,7 +160,8 @@ const chatResponseSchema: FunctionDeclarationSchema = {
                 recommendation: {
                     type: SchemaType.OBJECT,
                     properties: {
-                        title: { type: SchemaType.STRING }, year: { type: SchemaType.INTEGER }, media_type: { type: SchemaType.STRING, enum: ['movie', 'tv'], format: "enum" },
+                        title: { type: SchemaType.STRING }, year: { type: SchemaType.INTEGER }, 
+                        tmdbMediaType: { type: SchemaType.STRING, enum: ['movie', 'tv'], format: "enum" }, // <--- MUDANÇA AQUI
                         analysis: { type: SchemaType.STRING }, synopsis: { type: SchemaType.STRING }, genre: { type: SchemaType.STRING },
                         type: { type: SchemaType.STRING, enum: ['Filme', 'Série', 'Anime', 'Programa'], format: "enum" },
                         probabilities: { type: SchemaType.OBJECT, properties: {} }

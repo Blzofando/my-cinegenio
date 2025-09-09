@@ -8,7 +8,7 @@ type AIProvider = 'gemini' | 'openai';
  * ou 'gemini' para usar o Google Gemini.
  * Esta é a única chave que você precisa mudar para trocar o provedor de IA.
  */
-export const ACTIVE_AI_PROVIDER: AIProvider = 'openai';
+export const ACTIVE_AI_PROVIDER: AIProvider = 'gemini'; // 'gemini' ou 'openai'
 
 // --- Modelos Específicos por Função ---
 /**
@@ -19,7 +19,7 @@ export const ACTIVE_AI_PROVIDER: AIProvider = 'openai';
 export const AI_MODELS = {
   gemini: {
     
-    chat: 'gemini-2.5-pro',
+    chat: 'gemini-2.5-flash',
     
     recommendation: 'gemini-2.5-flash',
 

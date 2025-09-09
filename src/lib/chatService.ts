@@ -1,14 +1,15 @@
-// src/lib/chatService.ts
 "use server";
 
 import { doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { getWatchedItems, getWatchlistItems, getTMDbRadarCache, getRelevantReleases } from './firestore';
 import { AllManagedWatchedData, Challenge, WeeklyRelevants } from '@/types';
-// ALTERAÇÃO: Importando do nosso novo serviço de IA unificado
+// Importa do nosso novo serviço de IA unificado
 import { formatWatchedDataForPrompt, generateAdvancedChatResponse, generateChatTitle } from './aiService';
+// Importa do tmdb para o enriquecimento dos dados
 import { getTMDbDetails, searchByTitleAndYear } from './tmdb';
-// Importa o tipo da resposta de um dos serviços para manter a consistência
+// CORREÇÃO: Re-adicionando o tipo de resposta para consistência
+import type { AIChatResponse } from './gemini';
 
 export type ChatMessage = {
     role: 'user' | 'model';
@@ -22,8 +23,6 @@ export type ChatSession = {
     messages: ChatMessage[];
 }
 
-// OS SCHEMAS FORAM MOVIDOS PARA gemini.ts E NÃO SÃO MAIS NECESSÁRIOS AQUI
-
 export const getAdvancedAIChatResponse = async (
     currentMessage: string,
     history: ChatMessage[]
@@ -31,7 +30,7 @@ export const getAdvancedAIChatResponse = async (
     try {
         console.log("--- AÇÃO DO CHAT INICIADA ---");
 
-        // Busca todos os dados de contexto em paralelo
+        // Busca de todos os dados de contexto (inalterado)
         const [watchedItems, watchlistItems, tmdbRadarItems, relevantRadarItems] = await Promise.all([
             getWatchedItems(),
             getWatchlistItems(),
@@ -52,7 +51,7 @@ export const getAdvancedAIChatResponse = async (
         const relevantsSnap = await getDoc(doc(db, 'weeklyRelevants', 'currentList'));
         const weeklyRelevants: WeeklyRelevants | null = relevantsSnap.exists() ? relevantsSnap.data() as WeeklyRelevants : null;
 
-        // Formata o contexto para o prompt da IA
+        // Formatação do contexto para o prompt (inalterado)
         const tasteProfile = await formatWatchedDataForPrompt(watchedData);
         const watchlistText = watchlistItems.map(item => `- ${item.title} (ID: ${item.id})`).join('\n') || 'Nenhuma';
         const challengeText = challenge ? `Desafio "${challenge.challengeType}": ${challenge.reason}\nItens do desafio:\n${challenge.steps.map(s => `- ${s.title} (ID: ${s.tmdbId})`).join('\n')}` : 'Nenhum desafio ativo';
@@ -88,18 +87,39 @@ export const getAdvancedAIChatResponse = async (
             user: ${currentMessage}
         `;
 
-        // ALTERAÇÃO: Usando a nova função do aiService
         const aiResponse = await generateAdvancedChatResponse(prompt);
         
         console.log("RAW AI Response:", JSON.stringify(aiResponse, null, 2));
 
-        // Lógica de pós-processamento para enriquecer a resposta da IA com dados do TMDb
+        // CORREÇÃO 1: Normalizar a resposta da IA para lidar com inconsistências de nome de campo
+        if (aiResponse.type === 'recommendation' && aiResponse.data.recommendation) {
+            const rec = aiResponse.data.recommendation as any;
+            if (rec.media_type && !rec.tmdbMediaType) {
+                console.log(`Normalizando 'media_type' para 'tmdbMediaType'. Valor: ${rec.media_type}`);
+                rec.tmdbMediaType = rec.media_type;
+                delete rec.media_type;
+            }
+        }
+
+        // CORREÇÃO 2: Lógica de enriquecimento agora usa o campo normalizado 'tmdbMediaType'
         if (aiResponse.type === 'recommendation' && aiResponse.data.recommendation) {
             const rec = aiResponse.data.recommendation;
-            const tmdbResult = await searchByTitleAndYear(rec.title, rec.year, rec.media_type);
-            if (tmdbResult) {
-                aiResponse.data.recommendation.id = tmdbResult.id;
-                aiResponse.data.recommendation.posterUrl = tmdbResult.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbResult.poster_path}` : undefined;
+            
+            if (rec.title && rec.year && rec.tmdbMediaType) {
+                console.log(`Enriquecendo dados para: ${rec.title} (${rec.year}), tipo: ${rec.tmdbMediaType}`);
+                const tmdbResult = await searchByTitleAndYear(rec.title, rec.year, rec.tmdbMediaType);
+                
+                if (tmdbResult) {
+                    console.log("Encontrado no TMDb:", tmdbResult.id);
+                    aiResponse.data.recommendation.id = tmdbResult.id;
+                    aiResponse.data.recommendation.posterUrl = tmdbResult.poster_path 
+                        ? `https://image.tmdb.org/t/p/w500${tmdbResult.poster_path}` 
+                        : undefined;
+                } else {
+                    console.warn(`Não foi possível encontrar um match no TMDb para "${rec.title}" (${rec.year}). O ID e o pôster estarão ausentes.`);
+                }
+            } else {
+                 console.warn("A resposta da IA não continha title, year ou tmdbMediaType para a busca no TMDb.", rec);
             }
         }
         
@@ -116,7 +136,7 @@ export const getAdvancedAIChatResponse = async (
             aiResponse.data.list = enrichedList;
         }
         
-        console.log("Processamento concluído.");
+        console.log("Processamento concluído. Resposta final:", JSON.stringify(aiResponse, null, 2));
         return aiResponse;
 
     } catch (error) {
@@ -125,7 +145,7 @@ export const getAdvancedAIChatResponse = async (
     }
 };
 
-// --- FUNÇÕES DE HISTÓRICO ---
+// --- FUNÇÕES DE HISTÓRICO (completas e inalteradas) ---
 const CHAT_HISTORY_COLLECTION = 'chatHistories';
 
 export const listChatSessions = async (): Promise<{ id: string; title: string; }[]> => {
@@ -163,7 +183,6 @@ export const saveChatSession = async (sessionId: string | null, messages: ChatMe
         } else {
             const conversationText = messages.map(m => m.parts[0].text).slice(0, 4).join('\n');
             const prompt = `Gere um título curto e objetivo (máximo 5 palavras) para a seguinte conversa:\n\n---\n${conversationText}\n---`;
-            // ALTERAÇÃO: Usando a nova função do aiService
             const titleResponse = await generateChatTitle(prompt);
             
             const docRef = await addDoc(collection(db, CHAT_HISTORY_COLLECTION), {
@@ -189,3 +208,5 @@ export const deleteChatSession = async (sessionId: string): Promise<void> => {
         throw new Error("Não foi possível apagar a conversa.");
     }
 };
+
+// --- FIM DO ARQUIVO ---

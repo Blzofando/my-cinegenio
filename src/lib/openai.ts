@@ -130,7 +130,7 @@ export const fetchBestTMDbMatch = async (prompt: string): Promise<number | null>
 export const generateAdvancedChatResponse = async (prompt: string): Promise<AIChatResponse> => {
     if (!API_KEY) return { type: 'text', data: { text: "Mock de chat OpenAI: A API não está configurada." } };
 
-    const systemPrompt = `Você é o CineGênio. Sua tarefa é responder ao usuário. Analise o contexto e a mensagem e retorne APENAS um objeto JSON válido com a estrutura: { type: 'text' | 'recommendation' | 'list', data: { text?: string, recommendation?: { title: string, year: number, media_type: 'movie' | 'tv', analysis: string, synopsis: string, genre: string, type: 'Filme' | 'Série' | 'Anime' | 'Programa', probabilities: object }, list?: [{ id: number, tmdbMediaType: 'movie' | 'tv', title: string }] } }. Se o usuário pedir uma lista de algo que está no contexto (desafio, watchlist), use o tipo 'list' e retorne os IDs exatos.`;
+    const systemPrompt = `Você é o CineGênio. Sua tarefa é responder ao usuário. Analise o contexto e a mensagem e retorne APENAS um objeto JSON válido com a estrutura: { type: 'text' | 'recommendation' | 'list', data: { text?: string, recommendation?: { title: string, year: number, tmdbMediaType: 'movie' | 'tv', analysis: string, synopsis: string, genre: string, type: 'Filme' | 'Série' | 'Anime' | 'Programa', probabilities: object }, list?: [{ id: number, tmdbMediaType: 'movie' | 'tv', title: string }] } }. Se o usuário pedir uma lista de algo que está no contexto (desafio, watchlist), use o tipo 'list' e retorne os IDs exatos.`;
     const modelName = AI_MODELS.openai.chat;
     
     return runJsonMode<AIChatResponse>(systemPrompt, prompt, modelName);
